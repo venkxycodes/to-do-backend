@@ -6,6 +6,7 @@ type Error string
 
 const (
 	RuntimeError       Error = "runtime-error"
+	ValidationError    Error = "validation-error"
 	SystemError        Error = "system-error"
 	PeerError          Error = "peer-app-error"
 	ClientError        Error = "client-error"

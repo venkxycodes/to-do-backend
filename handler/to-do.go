@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
+	"log"
 	"to-do/contract"
 	"to-do/service"
 	"to-do/utils"
@@ -24,4 +25,8 @@ func (t *ToDoHandler) CreateToDo(c *gin.Context) {
 		return
 	}
 	err := t.toDoService.CreateTask(&createUserRequest)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return
 }

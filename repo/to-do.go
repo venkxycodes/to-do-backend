@@ -1,24 +1,27 @@
 package repo
 
 import (
+	"context"
 	"go.mongodb.org/mongo-driver/mongo"
+	"to-do/config"
 	"to-do/domain"
 )
 
 type toDoRepo struct {
-	dbClient *mongo.Client
+	collection *mongo.Collection
 }
 
 type ToDoRepository interface {
 	AddTask(task domain.Task) error
 }
 
-func NewToDoRepo(dbClient *mongo.Client) *toDoRepo {
+func NewToDoRepo(db *mongo.Client) *toDoRepo {
 	return &toDoRepo{
-		dbClient: dbClient,
+		collection: db.Database(config.GetConfig().DbConfig.DBName).Collection("tasks"),
 	}
 }
 
 func (repo *toDoRepo) AddTask(task domain.Task) error {
-	return nil
+	_, err := repo.collection.InsertOne(context.Background(), task)
+	return err
 }

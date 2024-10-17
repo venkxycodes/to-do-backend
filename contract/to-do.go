@@ -7,5 +7,5 @@ type CreateTask struct {
 	Deadline  int64           `json:"deadline" binding:"required" bson:"deadline"`
 	Priority  domain.Priority `json:"priority" bson:"priority"`
 	Notes     string          `json:"notes" bson:"notes"`
-	CreatedBy string          `json:"created_by" bson:"created_by"`
+	CreatedBy string          `json:"created_by" bson:"created_by" binding:"required"`
 }

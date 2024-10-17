@@ -28,6 +28,7 @@ func apiServerCommand() *cobra.Command {
 			})
 
 			port := fmt.Sprintf(":%s", globalConfig.AppPort)
+			fmt.Println("Listening on port: ", port, globalConfig.AppPort)
 			err := r.Run(port)
 			if err != nil {
 				return err

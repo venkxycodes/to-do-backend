@@ -1,4 +1,4 @@
 #!/bin/bash
 
 make build
-./out/main start_http
+./out/Backend start_http

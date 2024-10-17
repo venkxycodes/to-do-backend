@@ -2,12 +2,17 @@ package utils
 
 import (
 	"net/http"
-	"to-do/error"
+	errs "to-do/error"
 )
 
 const (
 	InvalidRequest = "invalid request"
 )
+
+type ValidationError struct {
+	Field   string
+	Message string
+}
 
 type SuccessResponse struct {
 	Data interface{} `json:"data"`
@@ -68,12 +73,12 @@ func RenderError(err error, args interface{}, customMessage ...string) (int, Err
 	var message string
 
 	switch err {
-	case errors.ErrInvalidRequest:
+	case errs.ErrInvalidRequest:
 		code = err.Error()
 		httpStatus = http.StatusBadRequest
 		message = "invalid request"
 	default:
-		code = errors.SystemError
+		code = err.Error()
 		httpStatus = http.StatusInternalServerError
 		message = "internal server error"
 	}
