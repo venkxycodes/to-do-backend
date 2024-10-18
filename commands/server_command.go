@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"to-do/appcontext"
+	"to-do/config"
 	"to-do/logger"
 	"to-do/router"
 	"to-do/service"
@@ -15,7 +16,7 @@ func apiServerCommand() *cobra.Command {
 		Short: "Run the determine web server",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			logger.Logger.Info("initialising server command")
-			//globalConfig := config.GetConfig()
+			globalConfig := config.GetConfig()
 
 			appcontext.Init()
 			db := appcontext.GetDBClient()

@@ -11,7 +11,7 @@ var globalConfig = &config.Config{}
 
 func SetupCommands() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:               "determine",
+		Use:               "to-do",
 		Short:             "lb",
 		PersistentPreRunE: commandSetup(),
 		SilenceUsage:      true,

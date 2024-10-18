@@ -24,8 +24,8 @@ func (c *Config) SetDefault() {
 	}
 }
 
-func GetConfig() Config {
-	return Config{
+func GetConfig() *Config {
+	return &Config{
 		ENV:      os.Getenv("ENV"),
 		DbConfig: GetDbConfig(),
 		AppName:  os.Getenv("APP_NAME"),
