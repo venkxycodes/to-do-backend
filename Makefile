@@ -49,7 +49,7 @@ build:
 
 
 ## test: Run all tests
-test: config.test.yml test-run test-cov
+test: .env test-run test-cov
 
 test-run:
 	@go test ./... -covermode=count -coverprofile=test.cov

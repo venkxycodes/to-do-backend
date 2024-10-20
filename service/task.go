@@ -25,6 +25,7 @@ func NewToDoService(toDoRepo repo.ToDoRepository) ToDoService {
 }
 
 func (t *toDoService) CreateTask(ctx *gin.Context, task *contract.CreateTask) error {
+	// Check for presence of user id
 	err := t.toDoRepo.AddTask(ctx, domain.Task{
 		Id:           primitive.NewObjectID(),
 		Name:         task.Name,

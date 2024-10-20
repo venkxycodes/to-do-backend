@@ -30,6 +30,9 @@ func (c *CreateTask) Validate() map[string]string {
 	if len(c.Name) == 0 {
 		errors["name"] = "err-task-name-could-not-be-empty"
 	}
+	if c.UserId == 0 {
+		errors["user_id"] = "err-task-user-id-cannot-be-zero"
+	}
 	// Allow deadlines upto 7 days before from today
 	if c.Deadline < time.Now().AddDate(0, 0, -7).UnixMilli() {
 		errors["deadline"] = "err-task-deadline-cannot-be-before-7-days-from-today"

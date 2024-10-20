@@ -12,6 +12,11 @@ type userRepo struct {
 	collection *mongo.Collection
 }
 
+func (r *userRepo) GetAllUsers(ctx *gin.Context) ([]domain.User, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 type UserRepository interface {
 	AddNewUser(ctx *gin.Context, user *domain.User) error
 	GetUserByUsername(ctx *gin.Context, username string) (*domain.User, error)

@@ -11,7 +11,7 @@ type userService struct {
 }
 
 type UserService interface {
-	CreateUser(ctx *gin.Context, task contract.CreateUser) error
+	CreateUser(ctx *gin.Context, task *contract.CreateUser) error
 }
 
 func NewUserService(userRepo repo.UserRepository) UserService {
@@ -20,6 +20,10 @@ func NewUserService(userRepo repo.UserRepository) UserService {
 	}
 }
 
-func (u *userService) CreateUser(ctx *gin.Context, task contract.CreateUser) error {
-	
+func (u *userService) CreateUser(ctx *gin.Context, user *contract.CreateUser) error {
+	_, err := u.userRepo.GetUserByUsername(ctx, user.Username)
+	if err != nil {
+		return err
+	}
+	return nil
 }
