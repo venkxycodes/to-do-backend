@@ -8,13 +8,15 @@ import (
 
 type ServerDependencies struct {
 	ToDoService ToDoService
+	UserService UserService
 }
 
 func InstantiateServerDependencies() *ServerDependencies {
 	dbClient := appcontext.GetDBClient()
 	toDoRepo := repo.NewToDoRepo(dbClient)
-	toDoServ := NewToDoService(toDoRepo)
+	userRepo := repo.NewUserRepository(dbClient)
 	return &ServerDependencies{
-		ToDoService: toDoServ,
+		ToDoService: NewToDoService(toDoRepo),
+		UserService: NewUserService(userRepo),
 	}
 }

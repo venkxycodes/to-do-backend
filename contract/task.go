@@ -7,6 +7,7 @@ import (
 )
 
 type CreateTask struct {
+	UserId    int64           `json:"user_id" bson:"user_id"`
 	Name      string          `json:"name" binding:"required" bson:"name"`
 	Deadline  int64           `json:"deadline" binding:"required" bson:"deadline"`
 	Priority  domain.Priority `json:"priority" binding:"required,enum" bson:"priority"`
@@ -16,6 +17,7 @@ type CreateTask struct {
 
 type UpdateTask struct {
 	Id        primitive.ObjectID `json:"id" bson:"id" binding:"required"`
+	UserId    int64              `json:"user_id" bson:"user_id"`
 	Name      string             `json:"name" binding:"required" bson:"name"`
 	Notes     string             `json:"notes" binding:"required" bson:"notes"`
 	Deadline  int64              `json:"deadline" binding:"required" bson:"deadline"`

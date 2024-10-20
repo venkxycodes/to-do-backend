@@ -21,13 +21,18 @@ func InitRouter(opts Options) *gin.Engine {
 	router.Use(gin.Recovery())
 
 	router.GET("/ping", func(c *gin.Context) { c.String(http.StatusOK, "pong") })
+	userHandler := handler.NewUserHandler(opts.Dependencies.UserService)
 	todoHandler := handler.NewToDoHandler(opts.Dependencies.ToDoService)
-	InitTodoRouter(router, &todoHandler)
-
+	InitUserRouter(router, &userHandler)
+	InitToDoRouter(router, &todoHandler)
 	return router
 }
 
-func InitTodoRouter(router *gin.Engine, handler *handler.ToDoHandler) {
+func InitToDoRouter(router *gin.Engine, handler *handler.ToDoHandler) {
 	v1 := router.Group("api/v1")
 	v1.POST("reminder", handler.CreateToDo)
+}
+
+func InitUserRouter(router *gin.Engine, handler *handler.UserHandler) {
+
 }
