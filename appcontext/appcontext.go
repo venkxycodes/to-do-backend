@@ -2,6 +2,7 @@ package appcontext
 
 import (
 	"context"
+	"github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -12,6 +13,7 @@ import (
 
 type appContext struct {
 	mongoDbClient *mongo.Client
+	redisClient   *redis.Client
 }
 
 var appCtx *appContext
@@ -19,6 +21,24 @@ var appCtx *appContext
 func Init() {
 	appCtx = &appContext{}
 	appCtx.mongoDbClient = newDbClient()
+	appCtx.redisClient = newRedisClient()
+}
+
+func newRedisClient() *redis.Client {
+	cfg := config.GetRedisConfig()
+	opts := &redis.Options{
+		Addr: cfg.RedisAddress,
+		DB:   0,
+	}
+	rdb := redis.NewClient(opts)
+	status, err := rdb.Ping(context.Background()).Result()
+	if err != nil {
+		panic(err)
+	}
+	if status != "PONG" {
+		panic("err-unable-to-connect-to-redis")
+	}
+	return rdb
 }
 
 func newDbClient() *mongo.Client {
@@ -56,4 +76,8 @@ func newDbClient() *mongo.Client {
 
 func GetDBClient() *mongo.Client {
 	return appCtx.mongoDbClient
+}
+
+func GetRedisClient() *redis.Client {
+	return appCtx.redisClient
 }

@@ -14,9 +14,10 @@ type ServerDependencies struct {
 func InstantiateServerDependencies() *ServerDependencies {
 	dbClient := appcontext.GetDBClient()
 	toDoRepo := repo.NewToDoRepo(dbClient)
+	userCache := repo.NewUserCache(appcontext.GetRedisClient())
 	userRepo := repo.NewUserRepository(dbClient)
 	return &ServerDependencies{
 		ToDoService: NewToDoService(toDoRepo),
-		UserService: NewUserService(userRepo),
+		UserService: NewUserService(userCache, userRepo),
 	}
 }

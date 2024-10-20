@@ -8,6 +8,10 @@ type DbConfig struct {
 	DBName   string `yaml:"DB_NAME" env:"DB_NAME"`
 }
 
+type RedisConfig struct {
+	RedisAddress string `yaml:"REDIS_ADDRESS" env:"REDIS_ADDRESS"`
+}
+
 func (dc *DbConfig) GetConnectionString() string {
 	var connectionString string
 	//if strings.Contains(dc.Host, "atlas") {
