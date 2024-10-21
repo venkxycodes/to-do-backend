@@ -5,14 +5,14 @@ import (
 	"to-do/utils"
 )
 
-type CreateUser struct {
-	Name        string `json:"name"`
-	Username    string `json:"username"`
-	Password    string `json:"password"`
-	PhoneNumber string `json:"phone_number"`
+type SignUpUser struct {
+	Name        string `json:"name" binding:"required"`
+	Username    string `json:"username" binding:"required"`
+	Password    string `json:"password" binding:"required"`
+	PhoneNumber string `json:"phone_number" binding:"required"`
 }
 
-func (c *CreateUser) Validate() map[string]string {
+func (c *SignUpUser) Validate() map[string]string {
 	errors := make(map[string]string)
 	if c.Name == "" {
 		errors["name"] = "err-name-is-required"

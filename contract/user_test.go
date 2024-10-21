@@ -14,12 +14,12 @@ func TestCreateUser_Validate(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		c    *CreateUser
+		c    *SignUpUser
 		want map[string]string
 	}{
 		{
 			name: "test valid request",
-			c: &CreateUser{
+			c: &SignUpUser{
 				Name:        "venkat raman kannan",
 				Username:    "venkatramankannanxo",
 				Password:    "ThisIsAGoodPassword@99On100",
@@ -29,7 +29,7 @@ func TestCreateUser_Validate(t *testing.T) {
 		},
 		{
 			name: "test invalid request",
-			c: &CreateUser{
+			c: &SignUpUser{
 				Name:        "",
 				Username:    "1920234",
 				Password:    "thisnot",

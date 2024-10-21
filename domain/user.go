@@ -30,11 +30,11 @@ func (u *UsernameToUserIdMap) Get(username string) (int64, int64) {
 	}
 }
 
-func (u *UsernameToUserIdMap) Set(user *User) {
+func (u *UsernameToUserIdMap) Set(username string, userId int64) {
 	u.Lock()
 	defer u.Unlock()
-	if user != nil {
-		u.M[user.Username] = user.UserId
+	if username != "" {
+		u.M[username] = userId
 		u.LastUserId += 1
 	}
 }

@@ -30,9 +30,12 @@ func InitRouter(opts Options) *gin.Engine {
 
 func InitToDoRouter(router *gin.Engine, handler *handler.ToDoHandler) {
 	v1 := router.Group("api/v1")
-	v1.POST("reminder", handler.CreateToDo)
+	v1.POST("reminder", handler.CreateTask)
+	v1.PUT("reminder", handler.UpdateTask)
 }
 
 func InitUserRouter(router *gin.Engine, handler *handler.UserHandler) {
-
+	v1 := router.Group("api/v1")
+	v1.POST("sign-up", handler.SignUp)
+	//v1.POST("login", handler.Login)
 }
