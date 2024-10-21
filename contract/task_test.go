@@ -17,7 +17,7 @@ func TestCreateTask_Validate(t *testing.T) {
 		{
 			name: "test valid request",
 			c: &CreateTask{
-				UserId:    1,
+				UserName:  "venkxy30",
 				Name:      "new task",
 				Deadline:  currentTime,
 				Priority:  domain.LOW,
@@ -29,14 +29,14 @@ func TestCreateTask_Validate(t *testing.T) {
 		{
 			name: "test invalid request",
 			c: &CreateTask{
-				UserId:    0,
+				UserName:  "",
 				Name:      "",
 				Deadline:  time.Now().AddDate(-11, 0, 0).UnixMilli(),
 				Priority:  "new priority",
 				CreatedBy: "",
 			},
 			want: map[string]string{
-				"user_id":    "err-task-user-id-cannot-be-zero",
+				"user_name":  "err-user-name-cannot-be-empty",
 				"name":       "err-task-name-could-not-be-empty",
 				"deadline":   "err-task-deadline-cannot-be-before-7-days-from-today",
 				"priority":   "err-task-priority-invalid",

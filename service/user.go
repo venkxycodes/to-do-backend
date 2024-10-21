@@ -16,6 +16,7 @@ type userService struct {
 }
 
 type UserService interface {
+	GetUserIdByUserName(username string) (int64, error)
 	CreateUser(ctx *gin.Context, task *contract.SignUpUser) error
 }
 
@@ -37,11 +38,19 @@ func NewUserService(userRepo repo.UserRepository) UserService {
 	return u
 }
 
-func (u *userService) CreateUser(ctx *gin.Context, user *contract.SignUpUser) error {
-	userId, lastUserId := u.usernameToUserIdMap.Get(user.Username)
-	fmt.Println(userId, lastUserId)
+func (u *userService) GetUserIdByUserName(username string) (int64, error) {
+	userId, lastUserId := u.usernameToUserIdMap.Get(username)
+	//fmt.Println(userId, lastUserId)
 	if userId != 0 {
-		return fmt.Errorf("err-username-already-exists")
+		return userId, fmt.Errorf("err-username-already-exists")
+	}
+	return lastUserId, nil
+}
+
+func (u *userService) CreateUser(ctx *gin.Context, user *contract.SignUpUser) error {
+	lastUserId, err := u.GetUserIdByUserName(user.Username)
+	if err != nil {
+		return err
 	}
 	createErr := u.userRepo.AddNewUser(ctx, &domain.User{
 		Id:          primitive.NewObjectID(),

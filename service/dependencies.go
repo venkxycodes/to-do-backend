@@ -15,8 +15,9 @@ func InstantiateServerDependencies() *ServerDependencies {
 	dbClient := appcontext.GetDBClient()
 	toDoRepo := repo.NewToDoRepo(dbClient)
 	userRepo := repo.NewUserRepository(dbClient)
+	userServ := NewUserService(userRepo)
 	return &ServerDependencies{
-		ToDoService: NewToDoService(toDoRepo),
-		UserService: NewUserService(userRepo),
+		ToDoService: NewToDoService(toDoRepo, userServ),
+		UserService: userServ,
 	}
 }

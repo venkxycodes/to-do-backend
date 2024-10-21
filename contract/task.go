@@ -7,7 +7,7 @@ import (
 )
 
 type CreateTask struct {
-	UserId    int64           `json:"user_id" bson:"user_id"`
+	UserName  string          `json:"user_name" bson:"user_name"`
 	Name      string          `json:"name" binding:"required" bson:"name"`
 	Deadline  int64           `json:"deadline" binding:"required" bson:"deadline"`
 	Priority  domain.Priority `json:"priority" binding:"required,enum" bson:"priority"`
@@ -30,8 +30,8 @@ func (c *CreateTask) Validate() map[string]string {
 	if len(c.Name) == 0 {
 		errors["name"] = "err-task-name-could-not-be-empty"
 	}
-	if c.UserId == 0 {
-		errors["user_id"] = "err-task-user-id-cannot-be-zero"
+	if len(c.UserName) == 0 {
+		errors["user_name"] = "err-user-name-cannot-be-empty"
 	}
 	// Allow deadlines upto 7 days before from today
 	if c.Deadline < time.Now().AddDate(0, 0, -7).UnixMilli() {

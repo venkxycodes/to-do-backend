@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
@@ -10,7 +11,8 @@ import (
 )
 
 type toDoService struct {
-	toDoRepo repo.ToDoRepository
+	toDoRepo    repo.ToDoRepository
+	userService UserService
 }
 
 type ToDoService interface {
@@ -18,16 +20,21 @@ type ToDoService interface {
 	UpdateTask(ctx *gin.Context, task *contract.UpdateTask) error
 }
 
-func NewToDoService(toDoRepo repo.ToDoRepository) ToDoService {
+func NewToDoService(toDoRepo repo.ToDoRepository, userService UserService) ToDoService {
 	return &toDoService{
-		toDoRepo: toDoRepo,
+		toDoRepo:    toDoRepo,
+		userService: userService,
 	}
 }
 
 func (t *toDoService) CreateTask(ctx *gin.Context, task *contract.CreateTask) error {
-	// Check for presence of user id
-	err := t.toDoRepo.AddTask(ctx, domain.Task{
+	userId, err := t.userService.GetUserIdByUserName(task.UserName)
+	if err == nil {
+		return fmt.Errorf("err-user-not-identified-exists")
+	}
+	createTaskErr := t.toDoRepo.AddTask(ctx, &domain.Task{
 		Id:           primitive.NewObjectID(),
+		UserId:       userId,
 		Name:         task.Name,
 		Deadline:     task.Deadline,
 		Priority:     task.Priority,
@@ -40,20 +47,18 @@ func (t *toDoService) CreateTask(ctx *gin.Context, task *contract.CreateTask) er
 			UpdatedBy: task.CreatedBy,
 		},
 	})
-	return err
+	return createTaskErr
 }
 
 func (t *toDoService) UpdateTask(ctx *gin.Context, task *contract.UpdateTask) error {
-	err := t.toDoRepo.EditTask(ctx, domain.Task{
-		Id:       task.Id,
-		Name:     task.Name,
-		Deadline: task.Deadline,
-		Priority: task.Priority,
-		Notes:    task.Notes,
-		UpsertMeta: domain.UpsertMeta{
-			UpdatedAt: time.Now().UnixMilli(),
-			UpdatedBy: task.UpdatedBy,
-		},
-	})
-	return err
+	repoTask, err := t.toDoRepo.GetTaskById(ctx, task.Id)
+	if repoTask == nil || err != nil {
+		return err
+	}
+	repoTask.Name = task.Name
+	repoTask.Priority = task.Priority
+	repoTask.Notes = task.Notes
+	repoTask.Deadline = task.Deadline
+	updateErr := t.toDoRepo.EditTask(ctx, repoTask)
+	return updateErr
 }
