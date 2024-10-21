@@ -21,24 +21,6 @@ var appCtx *appContext
 func Init() {
 	appCtx = &appContext{}
 	appCtx.mongoDbClient = newDbClient()
-	appCtx.redisClient = newRedisClient()
-}
-
-func newRedisClient() *redis.Client {
-	cfg := config.GetRedisConfig()
-	opts := &redis.Options{
-		Addr: cfg.RedisAddress,
-		DB:   0,
-	}
-	rdb := redis.NewClient(opts)
-	status, err := rdb.Ping(context.Background()).Result()
-	if err != nil {
-		panic(err)
-	}
-	if status != "PONG" {
-		panic("err-unable-to-connect-to-redis")
-	}
-	return rdb
 }
 
 func newDbClient() *mongo.Client {

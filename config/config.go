@@ -5,11 +5,10 @@ import (
 )
 
 type Config struct {
-	AppName     string      `yaml:"APP_NAME" env:"APP_NAME"`
-	AppPort     string      `yaml:"APP_PORT" env:"APP_PORT"`
-	ENV         string      `yaml:"ENV" env:"ENVIRONMENT"`
-	DbConfig    DbConfig    `yaml:"DB_CONFIG" env:"DB_CONFIG"`
-	RedisConfig RedisConfig `yaml:"REDIS_CONFIG" env:"REDIS_CONFIG"`
+	AppName  string   `yaml:"APP_NAME" env:"APP_NAME"`
+	AppPort  string   `yaml:"APP_PORT" env:"APP_PORT"`
+	ENV      string   `yaml:"ENV" env:"ENVIRONMENT"`
+	DbConfig DbConfig `yaml:"DB_CONFIG" env:"DB_CONFIG"`
 }
 
 func (c *Config) SetDefault() {
@@ -27,11 +26,10 @@ func (c *Config) SetDefault() {
 
 func GetConfig() *Config {
 	return &Config{
-		ENV:         os.Getenv("ENV"),
-		DbConfig:    GetDbConfig(),
-		RedisConfig: GetRedisConfig(),
-		AppName:     os.Getenv("APP_NAME"),
-		AppPort:     os.Getenv("APP_PORT"),
+		ENV:      os.Getenv("ENV"),
+		DbConfig: GetDbConfig(),
+		AppName:  os.Getenv("APP_NAME"),
+		AppPort:  os.Getenv("APP_PORT"),
 	}
 }
 
@@ -42,11 +40,5 @@ func GetDbConfig() DbConfig {
 		Password: os.Getenv("DB_PASSWORD"),
 		Port:     os.Getenv("DB_PORT"),
 		DBName:   os.Getenv("DB_NAME"),
-	}
-}
-
-func GetRedisConfig() RedisConfig {
-	return RedisConfig{
-		RedisAddress: os.Getenv("REDIS_ADDRESS"),
 	}
 }

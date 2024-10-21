@@ -14,27 +14,27 @@ type User struct {
 	PhoneNumber string             `json:"phone_number" bson:"phone_number"`
 }
 
-type UserMap struct {
+type UsernameToUserIdMap struct {
 	sync.RWMutex
-	M          map[string]*User
+	M          map[string]int64
 	LastUserId int64
 }
 
-func (u *UserMap) Get(username string) (*User, int64) {
+func (u *UsernameToUserIdMap) Get(username string) (int64, int64) {
 	u.RLock()
 	defer u.RUnlock()
-	if userRecord, isPresent := u.M[username]; isPresent {
-		return userRecord, u.LastUserId
+	if userId, isPresent := u.M[username]; isPresent {
+		return userId, u.LastUserId
 	} else {
-		return nil, u.LastUserId
+		return 0, u.LastUserId
 	}
 }
 
-func (u *UserMap) Set(user *User) {
+func (u *UsernameToUserIdMap) Set(user *User) {
 	u.Lock()
 	defer u.Unlock()
 	if user != nil {
-		u.M[user.Username] = user
+		u.M[user.Username] = user.UserId
 		u.LastUserId += 1
 	}
 }
