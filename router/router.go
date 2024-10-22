@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"to-do/config"
+	"to-do/contract"
 	"to-do/handler"
 	"to-do/service"
 )
@@ -19,6 +20,7 @@ func InitRouter(opts Options) *gin.Engine {
 	router := gin.Default()
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
+	contract.RegisterValidators()
 
 	router.GET("/ping", func(c *gin.Context) { c.String(http.StatusOK, "pong") })
 	userHandler := handler.NewUserHandler(opts.Dependencies.UserService)
@@ -29,13 +31,14 @@ func InitRouter(opts Options) *gin.Engine {
 }
 
 func InitToDoRouter(router *gin.Engine, handler *handler.ToDoHandler) {
-	v1 := router.Group("api/v1")
-	v1.POST("reminder", handler.CreateTask)
-	v1.PUT("reminder", handler.UpdateTask)
+	v1 := router.Group("to-do/v1")
+	v1.POST("task", handler.CreateTask)
+	v1.PUT("task", handler.UpdateTask)
+	//v1.GET("tasks", handler.GetTasks)
 }
 
 func InitUserRouter(router *gin.Engine, handler *handler.UserHandler) {
-	v1 := router.Group("api/v1")
+	v1 := router.Group("to-do/v1/user")
 	v1.POST("sign-up", handler.SignUp)
 	//v1.POST("login", handler.Login)
 }

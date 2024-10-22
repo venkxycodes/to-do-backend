@@ -31,7 +31,7 @@ func TestCreateTask_Validate(t *testing.T) {
 			c: &CreateTask{
 				UserName:  "",
 				Name:      "",
-				Deadline:  time.Now().AddDate(-11, 0, 0).UnixMilli(),
+				Deadline:  1629591318000,
 				Priority:  "new priority",
 				CreatedBy: "",
 			},

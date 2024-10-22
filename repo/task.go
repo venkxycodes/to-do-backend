@@ -52,7 +52,7 @@ func (repo *toDoRepo) GetAllTasksForUser(ctx *gin.Context, userId int64) ([]doma
 	return tasks, nil
 }
 
-func (repo *toDoRepo) GetTaskById(ctx *gin.Context, id string) (*domain.Task, error) {
+func (repo *toDoRepo) GetTaskById(ctx *gin.Context, id primitive.ObjectID) (*domain.Task, error) {
 	var task *domain.Task
 	err := repo.collection.FindOne(ctx, bson.M{"_id": id}).Decode(&task)
 	return task, err
