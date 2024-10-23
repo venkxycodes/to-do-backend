@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
 	"to-do/config"
 	"to-do/domain"
 )
@@ -40,11 +41,11 @@ func (repo *toDoRepo) EditTask(ctx *gin.Context, task *domain.Task) error {
 }
 
 func (repo *toDoRepo) GetAllTasksForUser(ctx *gin.Context, userId int64) ([]domain.Task, error) {
-	findOptions := options.Find()
-	findOptions.SetSort(map[string]interface{}{"user_id": userId, "deadline": -1})
-	cursor, err := repo.collection.Find(ctx, bson.M{}, findOptions)
+	filter := bson.M{"user_id": userId}                                         // Filter by user_id
+	findOptions := options.Find().SetSort(bson.D{{Key: "deadline", Value: -1}}) // Sort by deadline in descending order
+	cursor, err := repo.collection.Find(ctx, filter, findOptions)
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
 	defer cursor.Close(ctx)
 	var tasks []domain.Task

@@ -19,7 +19,7 @@ const (
 
 type Task struct {
 	Id           primitive.ObjectID `json:"id" bson:"_id"`
-	UserId       int64              `json:"userId" bson:"userId"`
+	UserId       int64              `json:"user_id" bson:"user_id"`
 	Name         string             `json:"name" bson:"name"`
 	Deadline     int64              `json:"deadline" bson:"deadline"`
 	Priority     Priority           `json:"priority" bson:"priority"`

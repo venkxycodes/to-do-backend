@@ -18,13 +18,21 @@ type CreateTask struct {
 }
 
 type UpdateTask struct {
-	Id        primitive.ObjectID `json:"id" bson:"id" binding:"required"`
-	UserId    int64              `json:"user_id" bson:"user_id" binding:"required"`
+	Id        primitive.ObjectID `json:"id" bson:"_id" binding:"required"`
+	UserName  string             `json:"user_name" bson:"user_name" binding:"required"`
 	Name      string             `json:"name" binding:"required" bson:"name"`
 	Notes     string             `json:"notes" binding:"required" bson:"notes"`
 	Deadline  int64              `json:"deadline" binding:"required,CheckValidDeadline" bson:"deadline"`
 	Priority  domain.Priority    `json:"priority" binding:"required" bson:"priority"`
 	UpdatedBy string             `json:"updated_by" bson:"updated_by" binding:"required"`
+}
+
+type GetTasksRequest struct {
+	UserName string `json:"user_name" bson:"user_name" binding:"required"`
+}
+
+type UpdateTaskStatus struct {
+	Status string `json:"status" bson:"status" binding:"required"`
 }
 
 var CheckValidDeadline validator.Func = func(fl validator.FieldLevel) bool {
@@ -35,9 +43,23 @@ var CheckValidDeadline validator.Func = func(fl validator.FieldLevel) bool {
 	return true
 }
 
+var CheckValidUserName validator.Func = func(fl validator.FieldLevel) bool {
+	userName, ok := fl.Field().Interface().(string)
+	if !ok || len(userName) < 8 {
+		return false
+	}
+	return true
+}
+
 func RegisterValidators() {
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		err := v.RegisterValidation("CheckValidDeadline", CheckValidDeadline)
+		if err != nil {
+			return
+		}
+	}
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		err := v.RegisterValidation("CheckValidUserName", CheckValidUserName)
 		if err != nil {
 			return
 		}
@@ -64,5 +86,41 @@ func (c *CreateTask) Validate() map[string]string {
 	if c.CreatedBy == "" {
 		errors["created_by"] = "err-task-created-by-could-not-be-empty"
 	}
+	return errors
+}
+
+func (u *UpdateTask) Validate() map[string]string {
+	errors := make(map[string]string)
+	if len(u.Name) == 0 {
+		errors["name"] = "err-task-name-could-not-be-empty"
+	}
+	if len(u.UserName) == 0 {
+		errors["user_name"] = "err-user-name-cannot-be-empty"
+	}
+	// Prevent deadlines which are greater than 7 days from today
+	if u.Deadline < time.Now().AddDate(0, 0, -7).UnixMilli() {
+		errors["deadline"] = "err-task-deadline-cannot-be-before-7-days-from-today"
+	}
+	switch u.Priority {
+	case domain.HIGH, domain.MEDIUM, domain.LOW:
+	default:
+		errors["priority"] = "err-task-priority-invalid"
+	}
+	if u.UpdatedBy == "" {
+		errors["updated_by"] = "err-task-updated-by-could-not-be-empty"
+	}
+	return errors
+}
+
+func (r *GetTasksRequest) Validate() map[string]string {
+	errors := make(map[string]string)
+	if len(r.UserName) == 0 {
+		errors["user_name"] = "err-user-name-could-not-be-empty"
+	}
+	return errors
+}
+
+func (ut *UpdateTaskStatus) Validate() map[string]string {
+	errors := make(map[string]string)
 	return errors
 }

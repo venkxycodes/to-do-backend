@@ -34,7 +34,8 @@ func InitToDoRouter(router *gin.Engine, handler *handler.ToDoHandler) {
 	v1 := router.Group("to-do/v1")
 	v1.POST("task", handler.CreateTask)
 	v1.PUT("task", handler.UpdateTask)
-	//v1.GET("tasks", handler.GetTasks)
+	v1.GET("tasks", handler.GetTasks)
+	v1.PATCH("task", handler.UpdateTaskStatus)
 }
 
 func InitUserRouter(router *gin.Engine, handler *handler.UserHandler) {
