@@ -9,7 +9,7 @@ import (
 	"to-do/domain"
 )
 
-type userRepo struct {
+type userRepository struct {
 	collection *mongo.Collection
 }
 
@@ -19,25 +19,25 @@ type UserRepository interface {
 	GetAllUsers(ctx *gin.Context) ([]domain.User, error)
 }
 
-func NewUserRepository(db *mongo.Client) *userRepo {
-	return &userRepo{
+func NewUserRepository(db *mongo.Client) UserRepository {
+	return &userRepository{
 		collection: db.Database(config.GetConfig().DbConfig.DBName).Collection("users"),
 	}
 }
 
-func (r *userRepo) AddNewUser(ctx *gin.Context, user *domain.User) error {
+func (r *userRepository) AddNewUser(ctx *gin.Context, user *domain.User) error {
 	_, err := r.collection.InsertOne(ctx, user)
 	return err
 }
 
-func (r *userRepo) GetUserByUsername(ctx *gin.Context, username string) (*domain.User, error) {
+func (r *userRepository) GetUserByUsername(ctx *gin.Context, username string) (*domain.User, error) {
 	filter := bson.M{"username": username}
 	var result domain.User
 	err := r.collection.FindOne(ctx, filter).Decode(&result)
 	return &result, err
 }
 
-func (r *userRepo) GetAllUsers(ctx *gin.Context) ([]domain.User, error) {
+func (r *userRepository) GetAllUsers(ctx *gin.Context) ([]domain.User, error) {
 	filter := bson.D{}
 	opts := options.Find().SetSort(map[string]interface{}{"user_id": -1})
 	cursor, err := r.collection.Find(ctx, filter, opts)
