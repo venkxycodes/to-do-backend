@@ -26,7 +26,7 @@ func (t *TaskRepoMock) GetAllTasksForUser(ctx *gin.Context, userId int64) ([]dom
 	return args.Get(0).([]domain.Task), args.Error(1)
 }
 
-func (t TaskRepoMock) GetTaskById(ctx *gin.Context, id primitive.ObjectID) (*domain.Task, error) {
+func (t *TaskRepoMock) GetTaskById(ctx *gin.Context, id primitive.ObjectID) (*domain.Task, error) {
 	args := t.Called(ctx, id)
 	return args.Get(0).(*domain.Task), args.Error(1)
 }

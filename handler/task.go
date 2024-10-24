@@ -11,11 +11,11 @@ import (
 )
 
 type ToDoHandler struct {
-	toDoService service.ToDoService
+	taskService service.TaskService
 }
 
-func NewToDoHandler(toDoService service.ToDoService) ToDoHandler {
-	return ToDoHandler{toDoService: toDoService}
+func NewToDoHandler(toDoService service.TaskService) ToDoHandler {
+	return ToDoHandler{taskService: toDoService}
 }
 
 func (t *ToDoHandler) CreateTask(c *gin.Context) {
@@ -26,10 +26,10 @@ func (t *ToDoHandler) CreateTask(c *gin.Context) {
 		c.JSON(httpStatus, errResp)
 		return
 	}
-	err := t.toDoService.CreateTask(c, &createTaskRequest)
+	err := t.taskService.CreateTask(c, &createTaskRequest)
 	if err != nil {
 		log.Print(err)
-		httpStatus, errorMessage := utils.RenderError(err, "Failed to create task")
+		httpStatus, errorMessage := utils.RenderError(err, "Failed to create taskService")
 		c.JSON(httpStatus, errorMessage)
 		return
 	}
@@ -45,10 +45,10 @@ func (t *ToDoHandler) UpdateTask(c *gin.Context) {
 		c.JSON(httpStatus, errResp)
 		return
 	}
-	err := t.toDoService.UpdateTask(c, &updateTaskRequest)
+	err := t.taskService.UpdateTask(c, &updateTaskRequest)
 	if err != nil {
 		log.Print(err.Error())
-		httpStatus, errorMessage := utils.RenderError(err, "Failed to update task")
+		httpStatus, errorMessage := utils.RenderError(err, "Failed to update taskService")
 		c.JSON(httpStatus, errorMessage)
 		return
 	}
@@ -64,10 +64,10 @@ func (t *ToDoHandler) GetTasks(c *gin.Context) {
 		c.JSON(httpStatus, errResp)
 		return
 	}
-	tasks, err := t.toDoService.GetTasks(c, &getTasksRequest)
+	tasks, err := t.taskService.GetTasks(c, &getTasksRequest)
 	if err != nil {
 		log.Print(err.Error())
-		httpStatus, errorMessage := utils.RenderError(err, "Failed to update task")
+		httpStatus, errorMessage := utils.RenderError(err, "Failed to update taskService")
 		c.JSON(httpStatus, errorMessage)
 		return
 	}
@@ -83,10 +83,10 @@ func (t *ToDoHandler) UpdateTaskStatus(c *gin.Context) {
 		c.JSON(httpStatus, errResp)
 		return
 	}
-	err := t.toDoService.UpdateTaskStatus(c, &updateTaskStatusRequest)
+	err := t.taskService.UpdateTaskStatus(c, &updateTaskStatusRequest)
 	if err != nil {
 		log.Print(err.Error())
-		httpStatus, errorMessage := utils.RenderError(err, "Failed to update task")
+		httpStatus, errorMessage := utils.RenderError(err, "Failed to update taskService")
 		c.JSON(httpStatus, errorMessage)
 		return
 	}
