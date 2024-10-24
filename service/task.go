@@ -13,7 +13,7 @@ import (
 )
 
 type toDoService struct {
-	toDoRepo    repo.ToDoRepository
+	toDoRepo    repo.TaskRepository
 	userService UserService
 }
 
@@ -24,7 +24,7 @@ type ToDoService interface {
 	UpdateTaskStatus(ctx *gin.Context, updateTaskStatusRequest *contract.UpdateTaskStatus) error
 }
 
-func NewToDoService(toDoRepo repo.ToDoRepository, userService UserService) ToDoService {
+func NewToDoService(toDoRepo repo.TaskRepository, userService UserService) ToDoService {
 	return &toDoService{
 		toDoRepo:    toDoRepo,
 		userService: userService,
@@ -56,7 +56,7 @@ func (t *toDoService) CreateTask(ctx *gin.Context, task *contract.CreateTask) er
 
 func (t *toDoService) UpdateTask(ctx *gin.Context, task *contract.UpdateTask) error {
 	userId, err := t.userService.GetUserIdByUserName(task.UserName)
-	if err != nil {
+	if err == nil {
 		return fmt.Errorf("err-user-not-identified")
 	}
 	repoTask, err := t.toDoRepo.GetTaskById(ctx, task.Id)
@@ -94,7 +94,7 @@ func (t *toDoService) GetTasks(ctx *gin.Context, getTasksRequest *contract.GetTa
 
 func (t *toDoService) UpdateTaskStatus(ctx *gin.Context, updateTaskStatusRequest *contract.UpdateTaskStatus) error {
 	userId, err := t.userService.GetUserIdByUserName(updateTaskStatusRequest.UserName)
-	if err != nil {
+	if err == nil {
 		return fmt.Errorf("err-user-not-identified")
 	}
 	repoTask, getErr := t.toDoRepo.GetTaskById(ctx, updateTaskStatusRequest.TaskId)
@@ -104,8 +104,15 @@ func (t *toDoService) UpdateTaskStatus(ctx *gin.Context, updateTaskStatusRequest
 	if userId != repoTask.UserId {
 		return fmt.Errorf("err-user-name-and-task-id-mismatch")
 	}
-	if updateTaskStatusRequest.State != domain.InProgress {
-		return fmt.Errorf("err-task-cannot-be-moved-to-state-%s", updateTaskStatusRequest.State)
+	switch repoTask.State {
+	case domain.Pending, domain.Completed:
+		if updateTaskStatusRequest.State == domain.Pending || updateTaskStatusRequest.State == domain.Completed {
+			return fmt.Errorf("err-task-cannot-be-moved-from-%s-state-to-%s-state", repoTask.State, updateTaskStatusRequest.State)
+		}
+	case domain.InProgress:
+		if updateTaskStatusRequest.State == domain.InProgress {
+			return fmt.Errorf("err-task-already-in-%s-state", updateTaskStatusRequest.State)
+		}
 	}
 	repoTask.State = updateTaskStatusRequest.State
 	updateErr := t.toDoRepo.EditTask(ctx, repoTask)
