@@ -7,7 +7,7 @@ import (
 )
 
 type ServerDependencies struct {
-	ToDoService ToDoService
+	ToDoService TaskService
 	UserService UserService
 }
 
