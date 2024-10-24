@@ -6,9 +6,9 @@ APP_EXECUTABLE="$(BUILD_DIR)/$(PROJECT_NAME)"
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
-GOBIN=$(shell go env GOPATH)/bin
+	GOBIN=$(shell go env GOPATH)/bin
 else
-GOBIN=$(shell go env GOBIN)
+	GOBIN=$(shell go env GOBIN)
 endif
 
 BUILD_INFO_GIT_TAG ?= $(shell git describe --tags 2>/dev/null || echo unknown)
@@ -20,9 +20,6 @@ GOOS := $(shell go env GOOS)
 GOARCH := $(shell go env GOARCH)
 GO_BUILD := GOOS=${GOOS} GOARCH=${GOARCH} go build
 GO_RUN := go run $(LD_FLAGS)
-
-TOOLS_MOD_DIR = ./btools
-TOOLS_DIR = $(abspath ./.btools)
 
 # ====== Help =======
 .PHONY: help
@@ -47,15 +44,11 @@ build:
 	@mkdir -p $(BUILD_DIR)
 	@$(GO_BUILD) -o $(APP_EXECUTABLE) main.go
 
-
 ## test: Run all tests
 test: .env test-run test-cov
 
 test-run:
 	@go test ./... -covermode=count -coverprofile=test.cov
-
-test-cov: $(TOOLS_DIR)/gocov
-	@$(TOOLS_DIR)/gocov convert test.cov | $(TOOLS_DIR)/gocov report
 
 config.yaml:
 	@cp application.sample.yaml application.yaml
@@ -85,7 +78,6 @@ $(TOOLS_DIR)/gci: tools-files
 $(TOOLS_DIR)/golangci-lint: tools-files
 	@cd $(TOOLS_MOD_DIR) && \
 	go build -tags=tools -o $(TOOLS_DIR)/golangci-lint github.com/golangci/golangci-lint/cmd/golangci-lint
-
 
 ci: build
 	./$(APP_EXECUTABLE) migrate --stream="up" --config-file config.test.yml

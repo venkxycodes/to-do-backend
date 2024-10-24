@@ -20,7 +20,8 @@ type toDoService struct {
 type ToDoService interface {
 	CreateTask(ctx *gin.Context, task *contract.CreateTask) error
 	UpdateTask(ctx *gin.Context, task *contract.UpdateTask) error
-	GetTasks(ctx *gin.Context, task *contract.GetTasksRequest) (*view.GetTasksResponse, error)
+	GetTasks(ctx *gin.Context, getTasksRequest *contract.GetTasks) (*view.GetTasksResponse, error)
+	UpdateTaskStatus(ctx *gin.Context, updateTaskStatusRequest *contract.UpdateTaskStatus) error
 }
 
 func NewToDoService(toDoRepo repo.ToDoRepository, userService UserService) ToDoService {
@@ -36,13 +37,13 @@ func (t *toDoService) CreateTask(ctx *gin.Context, task *contract.CreateTask) er
 		return fmt.Errorf("err-user-not-identified")
 	}
 	createTaskErr := t.toDoRepo.AddTask(ctx, &domain.Task{
-		Id:           primitive.NewObjectID(),
-		UserId:       userId,
-		Name:         task.Name,
-		Deadline:     task.Deadline,
-		Priority:     task.Priority,
-		Notes:        task.Notes,
-		CurrentState: domain.Pending,
+		Id:       primitive.NewObjectID(),
+		UserId:   userId,
+		Name:     task.Name,
+		Deadline: task.Deadline,
+		Priority: task.Priority,
+		Notes:    task.Notes,
+		State:    domain.Pending,
 		UpsertMeta: domain.UpsertMeta{
 			CreatedAt: time.Now().UnixMilli(),
 			UpdatedAt: time.Now().UnixMilli(),
@@ -54,9 +55,16 @@ func (t *toDoService) CreateTask(ctx *gin.Context, task *contract.CreateTask) er
 }
 
 func (t *toDoService) UpdateTask(ctx *gin.Context, task *contract.UpdateTask) error {
+	userId, err := t.userService.GetUserIdByUserName(task.UserName)
+	if err != nil {
+		return fmt.Errorf("err-user-not-identified")
+	}
 	repoTask, err := t.toDoRepo.GetTaskById(ctx, task.Id)
 	if repoTask == nil || err != nil {
 		return err
+	}
+	if userId != repoTask.UserId {
+		return fmt.Errorf("err-user-name-and-task-id-mismatch")
 	}
 	repoTask.Name = task.Name
 	repoTask.Priority = task.Priority
@@ -66,22 +74,40 @@ func (t *toDoService) UpdateTask(ctx *gin.Context, task *contract.UpdateTask) er
 	return updateErr
 }
 
-func (t *toDoService) GetTasks(ctx *gin.Context, task *contract.GetTasksRequest) (*view.GetTasksResponse, error) {
-	userId, err := t.userService.GetUserIdByUserName(task.UserName)
+func (t *toDoService) GetTasks(ctx *gin.Context, getTasksRequest *contract.GetTasks) (*view.GetTasksResponse, error) {
+	userId, err := t.userService.GetUserIdByUserName(getTasksRequest.UserName)
 	if err == nil {
 		log.Print("err-user-not-identified")
 		return nil, err
 	}
 	log.Print("info-getting-tasks-for-user-", userId)
-	tasks, err := t.toDoRepo.GetAllTasksForUser(ctx, userId)
-	if err != nil {
+	tasks, getErr := t.toDoRepo.GetAllTasksForUser(ctx, userId)
+	if getErr != nil {
 		log.Print("err-getting-tasks-for-user-", userId)
-		return nil, err
+		return nil, getErr
 	}
-	log.Print(tasks)
-	tasksResponse := &view.GetTasksResponse{}
-	for _, task := range tasks {
-		tasksResponse.Tasks = append(tasksResponse.Tasks, task)
+	log.Print("info-tasks-in-repo-for-user-", userId, tasks)
+	return &view.GetTasksResponse{
+		Tasks: tasks,
+	}, nil
+}
+
+func (t *toDoService) UpdateTaskStatus(ctx *gin.Context, updateTaskStatusRequest *contract.UpdateTaskStatus) error {
+	userId, err := t.userService.GetUserIdByUserName(updateTaskStatusRequest.UserName)
+	if err != nil {
+		return fmt.Errorf("err-user-not-identified")
 	}
-	return tasksResponse, nil
+	repoTask, getErr := t.toDoRepo.GetTaskById(ctx, updateTaskStatusRequest.TaskId)
+	if repoTask == nil || getErr != nil {
+		return err
+	}
+	if userId != repoTask.UserId {
+		return fmt.Errorf("err-user-name-and-task-id-mismatch")
+	}
+	if updateTaskStatusRequest.State != domain.InProgress {
+		return fmt.Errorf("err-task-cannot-be-moved-to-state-%s", updateTaskStatusRequest.State)
+	}
+	repoTask.State = updateTaskStatusRequest.State
+	updateErr := t.toDoRepo.EditTask(ctx, repoTask)
+	return updateErr
 }

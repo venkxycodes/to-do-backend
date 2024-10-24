@@ -27,12 +27,14 @@ type UpdateTask struct {
 	UpdatedBy string             `json:"updated_by" bson:"updated_by" binding:"required"`
 }
 
-type GetTasksRequest struct {
+type GetTasks struct {
 	UserName string `json:"user_name" bson:"user_name" binding:"required"`
 }
 
 type UpdateTaskStatus struct {
-	Status string `json:"status" bson:"status" binding:"required"`
+	TaskId   primitive.ObjectID `json:"task_id" bson:"task_id" binding:"required"`
+	UserName string             `json:"user_name" bson:"user_name" binding:"required"`
+	State    domain.State       `json:"state" bson:"state" binding:"required"`
 }
 
 var CheckValidDeadline validator.Func = func(fl validator.FieldLevel) bool {
@@ -91,6 +93,9 @@ func (c *CreateTask) Validate() map[string]string {
 
 func (u *UpdateTask) Validate() map[string]string {
 	errors := make(map[string]string)
+	if _, err := primitive.ObjectIDFromHex(u.Id.Hex()); err != nil {
+		errors["id"] = "err-task-id-invalid"
+	}
 	if len(u.Name) == 0 {
 		errors["name"] = "err-task-name-could-not-be-empty"
 	}
@@ -112,7 +117,7 @@ func (u *UpdateTask) Validate() map[string]string {
 	return errors
 }
 
-func (r *GetTasksRequest) Validate() map[string]string {
+func (r *GetTasks) Validate() map[string]string {
 	errors := make(map[string]string)
 	if len(r.UserName) == 0 {
 		errors["user_name"] = "err-user-name-could-not-be-empty"
@@ -122,5 +127,16 @@ func (r *GetTasksRequest) Validate() map[string]string {
 
 func (ut *UpdateTaskStatus) Validate() map[string]string {
 	errors := make(map[string]string)
+	if _, err := primitive.ObjectIDFromHex(ut.TaskId.Hex()); err != nil {
+		errors["id"] = "err-task-id-invalid"
+	}
+	if len(ut.UserName) == 0 {
+		errors["user_name"] = "err-user-name-could-not-be-empty"
+	}
+	switch ut.State {
+	case domain.InProgress, domain.Completed, domain.Pending:
+	default:
+		errors["state"] = "err-task-state-invalid"
+	}
 	return errors
 }

@@ -57,7 +57,7 @@ func (t *ToDoHandler) UpdateTask(c *gin.Context) {
 }
 
 func (t *ToDoHandler) GetTasks(c *gin.Context) {
-	var getTasksRequest contract.GetTasksRequest
+	var getTasksRequest contract.GetTasks
 	if err := c.ShouldBindBodyWithJSON(&getTasksRequest); err != nil {
 		log.Println(err.Error())
 		httpStatus, errResp := utils.RenderError(errors.ErrUnsupported, getTasksRequest.Validate(), "Invalid request body")

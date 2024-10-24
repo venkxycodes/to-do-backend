@@ -38,9 +38,10 @@ func NewUserService(userRepo repo.UserRepository) UserService {
 	return u
 }
 
+// GetUserIdByUserName method returns userId and an error when a user already exists,
+// returns the last userId and no error when a user does not exist
 func (u *userService) GetUserIdByUserName(username string) (int64, error) {
 	userId, lastUserId := u.usernameToUserIdMap.Get(username)
-	//fmt.Println(userId, lastUserId)
 	if userId != 0 {
 		return userId, fmt.Errorf("err-username-already-exists")
 	}
