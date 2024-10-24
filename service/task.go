@@ -59,8 +59,8 @@ func (t *taskService) UpdateTask(ctx *gin.Context, task *contract.UpdateTask) er
 	if err == nil {
 		return fmt.Errorf("err-user-not-identified")
 	}
-	repoTask, err := t.taskRepo.GetTaskById(ctx, task.Id)
-	if repoTask == nil || err != nil {
+	repoTask, getErr := t.taskRepo.GetTaskById(ctx, task.Id)
+	if repoTask == nil || getErr != nil {
 		return err
 	}
 	if userId != repoTask.UserId {
@@ -70,6 +70,8 @@ func (t *taskService) UpdateTask(ctx *gin.Context, task *contract.UpdateTask) er
 	repoTask.Priority = task.Priority
 	repoTask.Notes = task.Notes
 	repoTask.Deadline = task.Deadline
+	repoTask.UpsertMeta.UpdatedAt = time.Now().UnixMilli()
+	repoTask.UpsertMeta.UpdatedBy = task.UpdatedBy
 	updateErr := t.taskRepo.EditTask(ctx, repoTask)
 	return updateErr
 }
