@@ -27,10 +27,6 @@ type UpdateTask struct {
 	UpdatedBy string             `json:"updated_by" bson:"updated_by" binding:"required"`
 }
 
-type GetTasks struct {
-	UserName string `json:"user_name" bson:"user_name" binding:"required"`
-}
-
 type UpdateTaskStatus struct {
 	TaskId   primitive.ObjectID `json:"task_id" bson:"task_id" binding:"required"`
 	UserName string             `json:"user_name" bson:"user_name" binding:"required"`
@@ -113,14 +109,6 @@ func (u *UpdateTask) Validate() map[string]string {
 	}
 	if u.UpdatedBy == "" {
 		errors["updated_by"] = "err-task-updated-by-could-not-be-empty"
-	}
-	return errors
-}
-
-func (r *GetTasks) Validate() map[string]string {
-	errors := make(map[string]string)
-	if len(r.UserName) == 0 {
-		errors["user_name"] = "err-user-name-could-not-be-empty"
 	}
 	return errors
 }

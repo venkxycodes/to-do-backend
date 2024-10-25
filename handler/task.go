@@ -57,17 +57,16 @@ func (t *ToDoHandler) UpdateTask(c *gin.Context) {
 }
 
 func (t *ToDoHandler) GetTasks(c *gin.Context) {
-	var getTasksRequest contract.GetTasks
-	if err := c.ShouldBindBodyWithJSON(&getTasksRequest); err != nil {
-		log.Println(err.Error())
-		httpStatus, errResp := utils.RenderError(errors.ErrUnsupported, getTasksRequest.Validate(), "Invalid request body")
-		c.JSON(httpStatus, errResp)
+	username := c.Query("user_name")
+	if username == "" {
+		httpStatus, errorMessage := utils.RenderError(nil, "Username query parameter is missing")
+		c.JSON(httpStatus, errorMessage)
 		return
 	}
-	tasks, err := t.taskService.GetTasks(c, &getTasksRequest)
+	tasks, err := t.taskService.GetTasks(c, username)
 	if err != nil {
 		log.Print(err.Error())
-		httpStatus, errorMessage := utils.RenderError(err, "Failed to update taskService")
+		httpStatus, errorMessage := utils.RenderError(err, "Failed to get tasks")
 		c.JSON(httpStatus, errorMessage)
 		return
 	}
@@ -86,7 +85,7 @@ func (t *ToDoHandler) UpdateTaskStatus(c *gin.Context) {
 	err := t.taskService.UpdateTaskStatus(c, &updateTaskStatusRequest)
 	if err != nil {
 		log.Print(err.Error())
-		httpStatus, errorMessage := utils.RenderError(err, "Failed to update taskService")
+		httpStatus, errorMessage := utils.RenderError(err, "Failed to update status")
 		c.JSON(httpStatus, errorMessage)
 		return
 	}

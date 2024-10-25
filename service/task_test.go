@@ -260,8 +260,8 @@ func Test_taskService_GetTasks(t *testing.T) {
 	}
 	ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
 	type args struct {
-		ctx             *gin.Context
-		getTasksRequest *contract.GetTasks
+		ctx      *gin.Context
+		username string
 	}
 	tasks := []domain.Task{
 		{
@@ -286,10 +286,8 @@ func Test_taskService_GetTasks(t *testing.T) {
 				userService: UserServiceMock{},
 			},
 			args: args{
-				ctx: ctx,
-				getTasksRequest: &contract.GetTasks{
-					UserName: "123",
-				},
+				ctx:      ctx,
+				username: "123",
 			},
 			want:    nil,
 			wantErr: true,
@@ -301,10 +299,8 @@ func Test_taskService_GetTasks(t *testing.T) {
 				userService: UserServiceMock{},
 			},
 			args: args{
-				ctx: ctx,
-				getTasksRequest: &contract.GetTasks{
-					UserName: "123",
-				},
+				ctx:      ctx,
+				username: "123",
 			},
 			want:    nil,
 			wantErr: true,
@@ -316,10 +312,8 @@ func Test_taskService_GetTasks(t *testing.T) {
 				userService: UserServiceMock{},
 			},
 			args: args{
-				ctx: ctx,
-				getTasksRequest: &contract.GetTasks{
-					UserName: "123",
-				},
+				ctx:      ctx,
+				username: "123",
 			},
 			want:    &view.GetTasksResponse{Tasks: tasks},
 			wantErr: false,
@@ -332,24 +326,24 @@ func Test_taskService_GetTasks(t *testing.T) {
 				userService: &tt.fields.userService,
 			}
 			if tt.name == "test non identified user" {
-				tt.fields.userService.On("GetUserIdByUserName", tt.args.getTasksRequest.UserName).Return(3, nil).Once()
+				tt.fields.userService.On("GetUserIdByUserName", tt.args.username).Return(3, nil).Once()
 			}
 			if tt.name == "test identified user, get tasks fail" {
 				var emptyTasks []domain.Task
-				tt.fields.userService.On("GetUserIdByUserName", tt.args.getTasksRequest.UserName).Return(3, fmt.Errorf("err")).Once()
+				tt.fields.userService.On("GetUserIdByUserName", tt.args.username).Return(3, fmt.Errorf("err")).Once()
 				tt.fields.taskRepo.On("GetAllTasksForUser", tt.args.ctx, int64(3)).Return(emptyTasks, fmt.Errorf("err")).Once()
 			}
 			if tt.name == "test identified user, get tasks success" {
-				tt.fields.userService.On("GetUserIdByUserName", tt.args.getTasksRequest.UserName).Return(3, fmt.Errorf("err")).Once()
+				tt.fields.userService.On("GetUserIdByUserName", tt.args.username).Return(3, fmt.Errorf("err")).Once()
 				tt.fields.taskRepo.On("GetAllTasksForUser", tt.args.ctx, int64(3)).Return(tasks, nil).Once()
 			}
-			got, err := ts.GetTasks(tt.args.ctx, tt.args.getTasksRequest)
+			got, err := ts.GetTasks(tt.args.ctx, tt.args.username)
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
 			}
-			assert.Equalf(t, tt.want, got, "GetTasks(%v, %v)", tt.args.ctx, tt.args.getTasksRequest)
+			assert.Equalf(t, tt.want, got, "GetTasks(%v, %v)", tt.args.ctx, tt.args.username)
 		})
 	}
 }

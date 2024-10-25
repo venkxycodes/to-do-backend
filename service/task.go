@@ -20,7 +20,7 @@ type taskService struct {
 type TaskService interface {
 	CreateTask(ctx *gin.Context, task *contract.CreateTask) error
 	UpdateTask(ctx *gin.Context, task *contract.UpdateTask) error
-	GetTasks(ctx *gin.Context, getTasksRequest *contract.GetTasks) (*view.GetTasksResponse, error)
+	GetTasks(ctx *gin.Context, username string) (*view.GetTasksResponse, error)
 	UpdateTaskStatus(ctx *gin.Context, updateTaskStatusRequest *contract.UpdateTaskStatus) error
 }
 
@@ -76,8 +76,8 @@ func (t *taskService) UpdateTask(ctx *gin.Context, task *contract.UpdateTask) er
 	return updateErr
 }
 
-func (t *taskService) GetTasks(ctx *gin.Context, getTasksRequest *contract.GetTasks) (*view.GetTasksResponse, error) {
-	userId, err := t.userService.GetUserIdByUserName(getTasksRequest.UserName)
+func (t *taskService) GetTasks(ctx *gin.Context, username string) (*view.GetTasksResponse, error) {
+	userId, err := t.userService.GetUserIdByUserName(username)
 	if err == nil {
 		log.Print("err-user-not-identified")
 		return nil, fmt.Errorf("err-user-not-identified")
