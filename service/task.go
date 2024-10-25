@@ -80,7 +80,7 @@ func (t *taskService) GetTasks(ctx *gin.Context, getTasksRequest *contract.GetTa
 	userId, err := t.userService.GetUserIdByUserName(getTasksRequest.UserName)
 	if err == nil {
 		log.Print("err-user-not-identified")
-		return nil, err
+		return nil, fmt.Errorf("err-user-not-identified")
 	}
 	log.Print("info-getting-tasks-for-user-", userId)
 	tasks, getErr := t.taskRepo.GetAllTasksForUser(ctx, userId)
