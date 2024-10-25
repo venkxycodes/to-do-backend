@@ -19,6 +19,7 @@ func NewToDoHandler(toDoService service.TaskService) ToDoHandler {
 }
 
 func (t *ToDoHandler) CreateTask(c *gin.Context) {
+	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 	var createTaskRequest contract.CreateTask
 	if err := c.ShouldBindBodyWithJSON(&createTaskRequest); err != nil {
 		log.Println(err.Error())
@@ -38,6 +39,7 @@ func (t *ToDoHandler) CreateTask(c *gin.Context) {
 }
 
 func (t *ToDoHandler) UpdateTask(c *gin.Context) {
+	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 	var updateTaskRequest contract.UpdateTask
 	if err := c.ShouldBindBodyWithJSON(&updateTaskRequest); err != nil {
 		log.Println(err.Error())
@@ -57,6 +59,7 @@ func (t *ToDoHandler) UpdateTask(c *gin.Context) {
 }
 
 func (t *ToDoHandler) GetTasks(c *gin.Context) {
+	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 	username := c.Query("user_name")
 	if username == "" {
 		httpStatus, errorMessage := utils.RenderError(nil, "Username query parameter is missing")
@@ -75,6 +78,7 @@ func (t *ToDoHandler) GetTasks(c *gin.Context) {
 }
 
 func (t *ToDoHandler) UpdateTaskStatus(c *gin.Context) {
+	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 	var updateTaskStatusRequest contract.UpdateTaskStatus
 	if err := c.ShouldBindBodyWithJSON(&updateTaskStatusRequest); err != nil {
 		log.Println(err.Error())
