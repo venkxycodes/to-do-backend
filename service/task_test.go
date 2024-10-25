@@ -12,6 +12,7 @@ import (
 	"to-do/contract"
 	"to-do/domain"
 	"to-do/repo"
+	"to-do/view"
 )
 
 func Test_toDoService_CreateTask(t *testing.T) {
@@ -247,6 +248,209 @@ func Test_taskService_UpdateTask(t *testing.T) {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func Test_taskService_GetTasks(t *testing.T) {
+	type fields struct {
+		taskRepo    repo.TaskRepoMock
+		userService UserServiceMock
+	}
+	ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
+	type args struct {
+		ctx             *gin.Context
+		getTasksRequest *contract.GetTasks
+	}
+	tasks := []domain.Task{
+		{
+			Id:       primitive.NewObjectID(),
+			UserId:   2,
+			Name:     "name",
+			Notes:    "notes",
+			Priority: domain.HIGH,
+		},
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *view.GetTasksResponse
+		wantErr bool
+	}{
+		{
+			name: "test non identified user",
+			fields: fields{
+				taskRepo:    repo.TaskRepoMock{},
+				userService: UserServiceMock{},
+			},
+			args: args{
+				ctx: ctx,
+				getTasksRequest: &contract.GetTasks{
+					UserName: "123",
+				},
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "test identified user, get tasks fail",
+			fields: fields{
+				taskRepo:    repo.TaskRepoMock{},
+				userService: UserServiceMock{},
+			},
+			args: args{
+				ctx: ctx,
+				getTasksRequest: &contract.GetTasks{
+					UserName: "123",
+				},
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "test identified user, get tasks success",
+			fields: fields{
+				taskRepo:    repo.TaskRepoMock{},
+				userService: UserServiceMock{},
+			},
+			args: args{
+				ctx: ctx,
+				getTasksRequest: &contract.GetTasks{
+					UserName: "123",
+				},
+			},
+			want:    &view.GetTasksResponse{Tasks: tasks},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ts := &taskService{
+				taskRepo:    &tt.fields.taskRepo,
+				userService: &tt.fields.userService,
+			}
+			if tt.name == "test non identified user" {
+				tt.fields.userService.On("GetUserIdByUserName", tt.args.getTasksRequest.UserName).Return(3, nil).Once()
+			}
+			if tt.name == "test identified user, get tasks fail" {
+				var emptyTasks []domain.Task
+				tt.fields.userService.On("GetUserIdByUserName", tt.args.getTasksRequest.UserName).Return(3, fmt.Errorf("err")).Once()
+				tt.fields.taskRepo.On("GetAllTasksForUser", tt.args.ctx, int64(3)).Return(emptyTasks, fmt.Errorf("err")).Once()
+			}
+			if tt.name == "test identified user, get tasks success" {
+				tt.fields.userService.On("GetUserIdByUserName", tt.args.getTasksRequest.UserName).Return(3, fmt.Errorf("err")).Once()
+				tt.fields.taskRepo.On("GetAllTasksForUser", tt.args.ctx, int64(3)).Return(tasks, nil).Once()
+			}
+			got, err := ts.GetTasks(tt.args.ctx, tt.args.getTasksRequest)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equalf(t, tt.want, got, "GetTasks(%v, %v)", tt.args.ctx, tt.args.getTasksRequest)
+		})
+	}
+}
+
+func Test_taskService_UpdateTaskStatus(t *testing.T) {
+	type fields struct {
+		taskRepo    repo.TaskRepoMock
+		userService UserServiceMock
+	}
+	ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
+	type args struct {
+		ctx                     *gin.Context
+		updateTaskStatusRequest *contract.UpdateTaskStatus
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "test non identified user",
+			fields: fields{
+				taskRepo:    repo.TaskRepoMock{},
+				userService: UserServiceMock{},
+			},
+			args: args{
+				ctx: ctx,
+				updateTaskStatusRequest: &contract.UpdateTaskStatus{
+					UserName: "123",
+					State:    domain.Completed,
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "test identified user, get task by id err",
+			fields: fields{
+				taskRepo:    repo.TaskRepoMock{},
+				userService: UserServiceMock{},
+			},
+			args: args{
+				ctx:                     ctx,
+				updateTaskStatusRequest: &contract.UpdateTaskStatus{TaskId: primitive.NewObjectID(), UserName: "user"},
+			},
+			wantErr: true,
+		},
+		{
+			name: "test identified user, get task by id nil task",
+			fields: fields{
+				taskRepo:    repo.TaskRepoMock{},
+				userService: UserServiceMock{},
+			},
+			args: args{
+				ctx:                     ctx,
+				updateTaskStatusRequest: &contract.UpdateTaskStatus{TaskId: primitive.NewObjectID(), UserName: "user"},
+			},
+			wantErr: true,
+		},
+		{
+			name: "test identified user, get task by id success, user id vs repo task user id mismatch",
+			fields: fields{
+				taskRepo:    repo.TaskRepoMock{},
+				userService: UserServiceMock{},
+			},
+			args: args{
+				ctx:                     ctx,
+				updateTaskStatusRequest: &contract.UpdateTaskStatus{TaskId: primitive.NewObjectID(), UserName: "user"},
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ts := &taskService{
+				taskRepo:    &tt.fields.taskRepo,
+				userService: &tt.fields.userService,
+			}
+			if tt.name == "test non identified user" {
+				tt.fields.userService.On("GetUserIdByUserName", tt.args.updateTaskStatusRequest.UserName).Return(3, nil).Once()
+			}
+			if tt.name == "test identified user, get task by id err" {
+				var taskModel *domain.Task
+				tt.fields.userService.On("GetUserIdByUserName", tt.args.updateTaskStatusRequest.UserName).Return(3, fmt.Errorf("err-user-already-exists")).Once()
+				tt.fields.taskRepo.On("GetTaskById", tt.args.ctx, tt.args.updateTaskStatusRequest.TaskId).Return(taskModel, fmt.Errorf("err")).Once()
+			}
+			if tt.name == "test identified user, get task by id nil task" {
+				var taskModel *domain.Task
+				tt.fields.userService.On("GetUserIdByUserName", tt.args.updateTaskStatusRequest.UserName).Return(3, fmt.Errorf("err-user-already-exists")).Once()
+				tt.fields.taskRepo.On("GetTaskById", tt.args.ctx, tt.args.updateTaskStatusRequest.TaskId).Return(taskModel, nil).Once()
+			}
+			if tt.name == "test identified user, get task by id success, user id vs repo task user id mismatch" {
+				taskModel := &domain.Task{
+					UserId: 2,
+				}
+				tt.fields.userService.On("GetUserIdByUserName", tt.args.updateTaskStatusRequest.UserName).Return(3, fmt.Errorf("err-user-already-exists")).Once()
+				tt.fields.taskRepo.On("GetTaskById", tt.args.ctx, tt.args.updateTaskStatusRequest.TaskId).Return(taskModel, nil).Once()
+			}
+			err := ts.UpdateTaskStatus(tt.args.ctx, tt.args.updateTaskStatusRequest)
+			if tt.wantErr {
+				assert.Error(t, err)
 			}
 		})
 	}
