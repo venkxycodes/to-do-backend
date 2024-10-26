@@ -117,6 +117,8 @@ func (t *taskService) UpdateTaskStatus(ctx *gin.Context, updateTaskStatusRequest
 		}
 	}
 	repoTask.State = updateTaskStatusRequest.State
+	repoTask.UpsertMeta.UpdatedAt = time.Now().UnixMilli()
+	repoTask.UpsertMeta.UpdatedBy = updateTaskStatusRequest.UpdatedBy
 	updateErr := t.taskRepo.EditTask(ctx, repoTask)
 	return updateErr
 }

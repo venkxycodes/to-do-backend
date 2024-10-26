@@ -43,7 +43,7 @@ func NewUserService(userRepo repo.UserRepository) UserService {
 func (u *userService) GetUserIdByUserName(username string) (int64, error) {
 	userId, lastUserId := u.usernameToUserIdMap.Get(username)
 	if userId != 0 {
-		return userId, fmt.Errorf("err-username-already-exists")
+		return userId, fmt.Errorf("err-username-already-taken")
 	}
 	return lastUserId, nil
 }
@@ -61,6 +61,9 @@ func (u *userService) CreateUser(ctx *gin.Context, user *contract.SignUpUser) er
 		UserId:      lastUserId + 1,
 		PhoneNumber: user.PhoneNumber,
 	})
+	if createErr != nil {
+		return createErr
+	}
 	u.usernameToUserIdMap.Set(user.Username, lastUserId+1)
-	return createErr
+	return nil
 }

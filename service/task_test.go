@@ -415,6 +415,54 @@ func Test_taskService_UpdateTaskStatus(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "test identified user, move to same state",
+			fields: fields{
+				taskRepo:    repo.TaskRepoMock{},
+				userService: UserServiceMock{},
+			},
+			args: args{
+				ctx:                     ctx,
+				updateTaskStatusRequest: &contract.UpdateTaskStatus{TaskId: primitive.NewObjectID(), UserName: "user", State: domain.Pending},
+			},
+			wantErr: true,
+		},
+		{
+			name: "test identified user, move to same in - progress to in - progress",
+			fields: fields{
+				taskRepo:    repo.TaskRepoMock{},
+				userService: UserServiceMock{},
+			},
+			args: args{
+				ctx:                     ctx,
+				updateTaskStatusRequest: &contract.UpdateTaskStatus{TaskId: primitive.NewObjectID(), UserName: "user", State: domain.InProgress},
+			},
+			wantErr: true,
+		},
+		{
+			name: "test identified user, edit task fail",
+			fields: fields{
+				taskRepo:    repo.TaskRepoMock{},
+				userService: UserServiceMock{},
+			},
+			args: args{
+				ctx:                     ctx,
+				updateTaskStatusRequest: &contract.UpdateTaskStatus{TaskId: primitive.NewObjectID(), UserName: "user", State: domain.InProgress},
+			},
+			wantErr: true,
+		},
+		{
+			name: "test identified user, edit task success",
+			fields: fields{
+				taskRepo:    repo.TaskRepoMock{},
+				userService: UserServiceMock{},
+			},
+			args: args{
+				ctx:                     ctx,
+				updateTaskStatusRequest: &contract.UpdateTaskStatus{TaskId: primitive.NewObjectID(), UserName: "user", State: domain.InProgress},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -441,6 +489,40 @@ func Test_taskService_UpdateTaskStatus(t *testing.T) {
 				}
 				tt.fields.userService.On("GetUserIdByUserName", tt.args.updateTaskStatusRequest.UserName).Return(3, fmt.Errorf("err-user-already-exists")).Once()
 				tt.fields.taskRepo.On("GetTaskById", tt.args.ctx, tt.args.updateTaskStatusRequest.TaskId).Return(taskModel, nil).Once()
+			}
+			if tt.name == "test identified user, move to same state" {
+				taskModel := &domain.Task{
+					UserId: 3,
+					State:  domain.Pending,
+				}
+				tt.fields.userService.On("GetUserIdByUserName", tt.args.updateTaskStatusRequest.UserName).Return(3, fmt.Errorf("err-user-already-exists")).Once()
+				tt.fields.taskRepo.On("GetTaskById", tt.args.ctx, tt.args.updateTaskStatusRequest.TaskId).Return(taskModel, nil).Once()
+			}
+			if tt.name == "test identified user, move to same in - progress to in - progress" {
+				taskModel := &domain.Task{
+					UserId: 3,
+					State:  domain.InProgress,
+				}
+				tt.fields.userService.On("GetUserIdByUserName", tt.args.updateTaskStatusRequest.UserName).Return(3, fmt.Errorf("err-user-already-exists")).Once()
+				tt.fields.taskRepo.On("GetTaskById", tt.args.ctx, tt.args.updateTaskStatusRequest.TaskId).Return(taskModel, nil).Once()
+			}
+			if tt.name == "test identified user, edit task fail" {
+				taskModel := &domain.Task{
+					UserId: 3,
+					State:  domain.Pending,
+				}
+				tt.fields.userService.On("GetUserIdByUserName", tt.args.updateTaskStatusRequest.UserName).Return(3, fmt.Errorf("err-user-already-exists")).Once()
+				tt.fields.taskRepo.On("GetTaskById", tt.args.ctx, tt.args.updateTaskStatusRequest.TaskId).Return(taskModel, nil).Once()
+				tt.fields.taskRepo.On("EditTask", tt.args.ctx, mock.Anything).Return(fmt.Errorf("err")).Once()
+			}
+			if tt.name == "test identified user, edit task success" {
+				taskModel := &domain.Task{
+					UserId: 3,
+					State:  domain.Pending,
+				}
+				tt.fields.userService.On("GetUserIdByUserName", tt.args.updateTaskStatusRequest.UserName).Return(3, fmt.Errorf("err-user-already-exists")).Once()
+				tt.fields.taskRepo.On("GetTaskById", tt.args.ctx, tt.args.updateTaskStatusRequest.TaskId).Return(taskModel, nil).Once()
+				tt.fields.taskRepo.On("EditTask", tt.args.ctx, mock.Anything).Return(nil).Once()
 			}
 			err := ts.UpdateTaskStatus(tt.args.ctx, tt.args.updateTaskStatusRequest)
 			if tt.wantErr {
