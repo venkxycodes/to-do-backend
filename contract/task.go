@@ -28,9 +28,10 @@ type UpdateTask struct {
 }
 
 type UpdateTaskStatus struct {
-	TaskId   primitive.ObjectID `json:"task_id" bson:"task_id" binding:"required"`
-	UserName string             `json:"user_name" bson:"user_name" binding:"required"`
-	State    domain.State       `json:"state" bson:"state" binding:"required"`
+	TaskId    primitive.ObjectID `json:"task_id" bson:"task_id" binding:"required"`
+	UserName  string             `json:"user_name" bson:"user_name" binding:"required"`
+	State     domain.State       `json:"state" bson:"state" binding:"required"`
+	UpdatedBy string             `json:"updated_by" bson:"updated_by" binding:"required"`
 }
 
 var CheckValidDeadline validator.Func = func(fl validator.FieldLevel) bool {
@@ -125,6 +126,9 @@ func (ut *UpdateTaskStatus) Validate() map[string]string {
 	case domain.InProgress, domain.Completed, domain.Pending:
 	default:
 		errors["state"] = "err-task-state-invalid"
+	}
+	if len(ut.UpdatedBy) == 0 {
+		errors["updated_by"] = "err-task-updated-by-could-not-be-empty"
 	}
 	return errors
 }
