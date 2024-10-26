@@ -40,6 +40,6 @@ func InitToDoRouter(router *gin.Engine, handler *handler.ToDoHandler) {
 
 func InitUserRouter(router *gin.Engine, handler *handler.UserHandler) {
 	v1 := router.Group("to-do/v1/user")
-	v1.POST("sign-up", handler.SignUp)
+	v1.POST("sign-up", handler.SignUpUser)
 	//v1.POST("login", handler.Login)
 }

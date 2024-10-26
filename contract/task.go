@@ -66,7 +66,7 @@ func RegisterValidators() {
 }
 
 func (c *CreateTask) Validate() map[string]string {
-	errors := make(map[string]string)
+	errors := make(map[string]string, 6)
 	if len(c.Name) == 0 {
 		errors["name"] = "err-task-name-could-not-be-empty"
 	}

@@ -12,8 +12,24 @@ type SignUpUser struct {
 	PhoneNumber string `json:"phone_number" binding:"required"`
 }
 
+type LoginUser struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+func (l *LoginUser) Validate() map[string]string {
+	errors := make(map[string]string, 3)
+	if len(l.Username) < 8 {
+		errors["username"] = "err-username-should-not-be-lesser-than-8-characters"
+	}
+	if err := ValidatePassword(l.Password); err != "" {
+		errors["password"] = err
+	}
+	return errors
+}
+
 func (c *SignUpUser) Validate() map[string]string {
-	errors := make(map[string]string)
+	errors := make(map[string]string, 5)
 	if c.Name == "" {
 		errors["name"] = "err-name-is-required"
 	}

@@ -17,7 +17,8 @@ type userService struct {
 
 type UserService interface {
 	GetUserIdByUserName(username string) (int64, error)
-	CreateUser(ctx *gin.Context, task *contract.SignUpUser) error
+	CreateUser(ctx *gin.Context, user *contract.SignUpUser) error
+	LoginUser(ctx *gin.Context, user *contract.LoginUser) error
 }
 
 func NewUserService(userRepo repo.UserRepository) UserService {
@@ -65,5 +66,20 @@ func (u *userService) CreateUser(ctx *gin.Context, user *contract.SignUpUser) er
 		return createErr
 	}
 	u.usernameToUserIdMap.Set(user.Username, lastUserId+1)
+	return nil
+}
+
+func (u *userService) LoginUser(ctx *gin.Context, userLoginInfo *contract.LoginUser) error {
+	userId, err := u.GetUserIdByUserName(userLoginInfo.Username)
+	if err == nil {
+		return fmt.Errorf("err-username-not-identified")
+	}
+	userDetails, getUserErr := u.userRepo.GetUserByUserId(ctx, userId)
+	if getUserErr != nil {
+		return err
+	}
+	if userDetails.Password != userLoginInfo.Password {
+		return fmt.Errorf("err-incorrect-password")
+	}
 	return nil
 }

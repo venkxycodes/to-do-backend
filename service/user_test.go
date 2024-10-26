@@ -168,3 +168,121 @@ func Test_userService_CreateUser(t *testing.T) {
 		})
 	}
 }
+
+func Test_userService_LoginUser(t *testing.T) {
+	type fields struct {
+		userRepo            repo.UserRepoMock
+		usernameToUserIdMap *domain.UsernameToUserIdMap
+	}
+	type args struct {
+		ctx           *gin.Context
+		userLoginInfo *contract.LoginUser
+	}
+	ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "test user not identified",
+			fields: fields{
+				usernameToUserIdMap: &domain.UsernameToUserIdMap{
+					M: map[string]int64{"user": 4},
+				},
+			},
+			args: args{
+				ctx: ctx,
+				userLoginInfo: &contract.LoginUser{
+					Username: "venkxy7codes1",
+					Password: "Venkxycodes@123",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "test user identified, get user details error",
+			fields: fields{
+				usernameToUserIdMap: &domain.UsernameToUserIdMap{
+					M: map[string]int64{"venkxy7codes1": 4},
+				},
+				userRepo: repo.UserRepoMock{},
+			},
+			args: args{
+				ctx: ctx,
+				userLoginInfo: &contract.LoginUser{
+					Username: "venkxy7codes1",
+					Password: "Venkxycodes@123",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "test user identified, password mismatch",
+			fields: fields{
+				usernameToUserIdMap: &domain.UsernameToUserIdMap{
+					M: map[string]int64{"venkxy7codes1": 4},
+				},
+				userRepo: repo.UserRepoMock{},
+			},
+			args: args{
+				ctx: ctx,
+				userLoginInfo: &contract.LoginUser{
+					Username: "venkxy7codes1",
+					Password: "Venkxycodes@123",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "test successful login",
+			fields: fields{
+				usernameToUserIdMap: &domain.UsernameToUserIdMap{
+					M: map[string]int64{"venkxy7codes1": 4},
+				},
+				userRepo: repo.UserRepoMock{},
+			},
+			args: args{
+				ctx: ctx,
+				userLoginInfo: &contract.LoginUser{
+					Username: "venkxy7codes1",
+					Password: "Venkxycodes@123",
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			u := &userService{
+				userRepo:            &tt.fields.userRepo,
+				usernameToUserIdMap: tt.fields.usernameToUserIdMap,
+			}
+			if tt.name == "test user identified, get user details error" {
+				var user *domain.User
+				tt.fields.userRepo.On("GetUserByUserId", tt.args.ctx, int64(4)).Return(user, fmt.Errorf("err")).Once()
+			}
+			if tt.name == "test user identified, password mismatch" {
+				tt.fields.userRepo.On("GetUserByUserId", tt.args.ctx, int64(4)).Return(&domain.User{
+					Username: "venkxy7codes1",
+					UserId:   int64(4),
+					Password: "venkxycodes@123",
+				}, nil).Once()
+			}
+			if tt.name == "test successful login" {
+				tt.fields.userRepo.On("GetUserByUserId", tt.args.ctx, int64(4)).Return(&domain.User{
+					Username: "venkxy7codes1",
+					UserId:   int64(4),
+					Password: "Venkxycodes@123",
+				}, nil).Once()
+			}
+			err := u.LoginUser(tt.args.ctx, tt.args.userLoginInfo)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
