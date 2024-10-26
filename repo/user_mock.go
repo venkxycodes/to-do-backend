@@ -15,8 +15,8 @@ func (u UserRepoMock) AddNewUser(ctx *gin.Context, user *domain.User) error {
 	return args.Error(0)
 }
 
-func (u UserRepoMock) GetUserByUsername(ctx *gin.Context, username string) (*domain.User, error) {
-	args := u.Called(ctx, username)
+func (u UserRepoMock) GetUserByUserId(ctx *gin.Context, userId int64) (*domain.User, error) {
+	args := u.Called(ctx, userId)
 	return args.Get(0).(*domain.User), args.Error(1)
 }
 

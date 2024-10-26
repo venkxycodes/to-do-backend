@@ -15,7 +15,7 @@ type userRepository struct {
 
 type UserRepository interface {
 	AddNewUser(ctx *gin.Context, user *domain.User) error
-	GetUserByUsername(ctx *gin.Context, username string) (*domain.User, error)
+	GetUserByUserId(ctx *gin.Context, userId int64) (*domain.User, error)
 	GetAllUsers(ctx *gin.Context) ([]domain.User, error)
 }
 
@@ -30,8 +30,8 @@ func (r *userRepository) AddNewUser(ctx *gin.Context, user *domain.User) error {
 	return err
 }
 
-func (r *userRepository) GetUserByUsername(ctx *gin.Context, username string) (*domain.User, error) {
-	filter := bson.M{"username": username}
+func (r *userRepository) GetUserByUserId(ctx *gin.Context, userId int64) (*domain.User, error) {
+	filter := bson.M{"user_id": userId}
 	var result domain.User
 	err := r.collection.FindOne(ctx, filter).Decode(&result)
 	return &result, err
