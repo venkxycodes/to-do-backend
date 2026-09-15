@@ -68,7 +68,8 @@ func Test_toDoService_CreateTask(t *testing.T) {
 			wantErr: false,
 		},
 	}
-	for _, tt := range tests {
+	for i := range tests {
+		tt := &tests[i]
 		t.Run(tt.name, func(t *testing.T) {
 			ts := &taskService{
 				taskRepo:    &tt.fields.toDoRepo,
@@ -201,7 +202,8 @@ func Test_taskService_UpdateTask(t *testing.T) {
 			wantErr: false,
 		},
 	}
-	for _, tt := range tests {
+	for i := range tests {
+		tt := &tests[i]
 		t.Run(tt.name, func(t *testing.T) {
 			ts := &taskService{
 				taskRepo:    &tt.fields.taskRepo,
@@ -319,7 +321,8 @@ func Test_taskService_GetTasks(t *testing.T) {
 			wantErr: false,
 		},
 	}
-	for _, tt := range tests {
+	for i := range tests {
+		tt := &tests[i]
 		t.Run(tt.name, func(t *testing.T) {
 			ts := &taskService{
 				taskRepo:    &tt.fields.taskRepo,
@@ -464,7 +467,8 @@ func Test_taskService_UpdateTaskStatus(t *testing.T) {
 			wantErr: false,
 		},
 	}
-	for _, tt := range tests {
+	for i := range tests {
+		tt := &tests[i]
 		t.Run(tt.name, func(t *testing.T) {
 			ts := &taskService{
 				taskRepo:    &tt.fields.taskRepo,
