@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"golang.org/x/crypto/bcrypt"
 	"net/http/httptest"
 	"to-do/contract"
 	"to-do/domain"
@@ -54,11 +55,15 @@ func (u *userService) CreateUser(ctx *gin.Context, user *contract.SignUpUser) er
 	if err != nil {
 		return err
 	}
+	passwordHash, hashErr := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if hashErr != nil {
+		return hashErr
+	}
 	createErr := u.userRepo.AddNewUser(ctx, &domain.User{
 		Id:          primitive.NewObjectID(),
 		Name:        user.Name,
 		Username:    user.Username,
-		Password:    user.Password,
+		Password:    string(passwordHash),
 		UserId:      lastUserId + 1,
 		PhoneNumber: user.PhoneNumber,
 	})
@@ -78,7 +83,7 @@ func (u *userService) LoginUser(ctx *gin.Context, userLoginInfo *contract.LoginU
 	if getUserErr != nil {
 		return err
 	}
-	if userDetails.Password != userLoginInfo.Password {
+	if bcrypt.CompareHashAndPassword([]byte(userDetails.Password), []byte(userLoginInfo.Password)) != nil && userDetails.Password != userLoginInfo.Password {
 		return fmt.Errorf("err-incorrect-password")
 	}
 	return nil

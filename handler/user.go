@@ -50,6 +50,6 @@ func (u UserHandler) LoginUser(c *gin.Context) {
 		c.JSON(httpStatus, errorMessage)
 		return
 	}
-	c.JSON(http.StatusCreated, utils.RenderSuccess("User logged in successfully"))
+	c.JSON(http.StatusOK, utils.RenderSuccess("User logged in successfully"))
 	return
 }
