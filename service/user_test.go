@@ -58,7 +58,8 @@ func Test_userService_GetUserIdByUserName(t *testing.T) {
 			wantErr: false,
 		},
 	}
-	for _, tt := range tests {
+	for i := range tests {
+		tt := &tests[i]
 		t.Run(tt.name, func(t *testing.T) {
 			u := &userService{
 				usernameToUserIdMap: tt.fields.usernameToUserIdMap,
@@ -147,7 +148,8 @@ func Test_userService_CreateUser(t *testing.T) {
 			wantErr: false,
 		},
 	}
-	for _, tt := range tests {
+	for i := range tests {
+		tt := &tests[i]
 		t.Run(tt.name, func(t *testing.T) {
 			u := &userService{
 				userRepo:            &tt.fields.userRepo,
@@ -253,7 +255,8 @@ func Test_userService_LoginUser(t *testing.T) {
 			wantErr: false,
 		},
 	}
-	for _, tt := range tests {
+	for i := range tests {
+		tt := &tests[i]
 		t.Run(tt.name, func(t *testing.T) {
 			u := &userService{
 				userRepo:            &tt.fields.userRepo,

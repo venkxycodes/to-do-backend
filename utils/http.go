@@ -71,6 +71,9 @@ func RenderError(err error, args interface{}, customMessage ...string) (int, Err
 	var httpStatus int
 	var code string
 	var message string
+	if err == nil {
+		err = errs.ErrInvalidRequest
+	}
 
 	switch err {
 	case errs.ErrInvalidRequest:

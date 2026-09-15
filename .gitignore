@@ -2,3 +2,5 @@ out/
 .env
 gitvenkatpersonal
 gitvenkatpersonal.pub
+.idea/
+*.cov

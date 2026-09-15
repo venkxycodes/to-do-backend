@@ -3,6 +3,7 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"to-do/auth"
 	"to-do/config"
 	"to-do/contract"
 	"to-do/handler"
@@ -26,12 +27,12 @@ func InitRouter(opts Options) *gin.Engine {
 	userHandler := handler.NewUserHandler(opts.Dependencies.UserService)
 	todoHandler := handler.NewToDoHandler(opts.Dependencies.ToDoService)
 	InitUserRouter(router, &userHandler)
-	InitToDoRouter(router, &todoHandler)
+	InitToDoRouter(router, &todoHandler, opts.Conf.JWTSecret)
 	return router
 }
 
-func InitToDoRouter(router *gin.Engine, handler *handler.ToDoHandler) {
-	v1 := router.Group("to-do/v1")
+func InitToDoRouter(router *gin.Engine, handler *handler.ToDoHandler, jwtSecret string) {
+	v1 := router.Group("to-do/v1", auth.RequireAuth(jwtSecret))
 	v1.POST("task", handler.CreateTask)
 	v1.PUT("task", handler.UpdateTask)
 	v1.GET("tasks", handler.GetTasks)
@@ -41,5 +42,5 @@ func InitToDoRouter(router *gin.Engine, handler *handler.ToDoHandler) {
 func InitUserRouter(router *gin.Engine, handler *handler.UserHandler) {
 	v1 := router.Group("to-do/v1/user")
 	v1.POST("sign-up", handler.SignUpUser)
-	//v1.POST("login", handler.Login)
+	v1.POST("login", handler.LoginUser)
 }

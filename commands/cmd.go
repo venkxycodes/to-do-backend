@@ -1,9 +1,10 @@
 package commands
 
 import (
+	"fmt"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
-	"log"
+	"os"
 	"to-do/config"
 )
 
@@ -22,9 +23,11 @@ func SetupCommands() *cobra.Command {
 
 func commandSetup() func(*cobra.Command, []string) error {
 	return func(command *cobra.Command, strings []string) (err error) {
-		if err := godotenv.Load(".env"); err != nil {
-			log.Fatal("Error loading .env file, ", err)
+		if err := godotenv.Load(".env"); err != nil && !os.IsNotExist(err) {
 			return err
+		}
+		if config.GetConfig().ENV != "dev" && config.GetConfig().JWTSecret == "" {
+			return fmt.Errorf("JWT_SECRET must be set outside development")
 		}
 		return
 	}

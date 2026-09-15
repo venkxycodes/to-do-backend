@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -61,7 +62,10 @@ func (t *taskService) UpdateTask(ctx *gin.Context, task *contract.UpdateTask) er
 	}
 	repoTask, getErr := t.taskRepo.GetTaskById(ctx, task.Id)
 	if repoTask == nil || getErr != nil {
-		return err
+		if getErr == nil {
+			return errors.New("err-task-not-found")
+		}
+		return getErr
 	}
 	if userId != repoTask.UserId {
 		return fmt.Errorf("err-user-name-and-task-id-mismatch")
@@ -101,7 +105,10 @@ func (t *taskService) UpdateTaskStatus(ctx *gin.Context, updateTaskStatusRequest
 	}
 	repoTask, getErr := t.taskRepo.GetTaskById(ctx, updateTaskStatusRequest.TaskId)
 	if repoTask == nil || getErr != nil {
-		return err
+		if getErr == nil {
+			return errors.New("err-task-not-found")
+		}
+		return getErr
 	}
 	if userId != repoTask.UserId {
 		return fmt.Errorf("err-user-name-and-task-id-mismatch")

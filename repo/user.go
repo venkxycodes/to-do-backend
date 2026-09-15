@@ -41,6 +41,10 @@ func (r *userRepository) GetAllUsers(ctx *gin.Context) ([]domain.User, error) {
 	filter := bson.D{}
 	opts := options.Find().SetSort(map[string]interface{}{"user_id": -1})
 	cursor, err := r.collection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
 	var users []domain.User
 	if err = cursor.All(ctx, &users); err != nil {
 		return nil, err

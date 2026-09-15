@@ -15,6 +15,11 @@ func (u *UserServiceMock) LoginUser(ctx *gin.Context, user *contract.LoginUser) 
 	return args.Error(0)
 }
 
+func (u *UserServiceMock) Authenticate(ctx *gin.Context, user *contract.LoginUser) (string, error) {
+	args := u.Called(ctx, user)
+	return args.String(0), args.Error(1)
+}
+
 func (u *UserServiceMock) GetUserIdByUserName(username string) (int64, error) {
 	args := u.Called(username)
 	return int64(args.Int(0)), args.Error(1)

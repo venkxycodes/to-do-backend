@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"golang.org/x/crypto/bcrypt"
 	"net/http/httptest"
+	"to-do/auth"
+	"to-do/config"
 	"to-do/contract"
 	"to-do/domain"
 	"to-do/repo"
@@ -19,6 +22,7 @@ type UserService interface {
 	GetUserIdByUserName(username string) (int64, error)
 	CreateUser(ctx *gin.Context, user *contract.SignUpUser) error
 	LoginUser(ctx *gin.Context, user *contract.LoginUser) error
+	Authenticate(ctx *gin.Context, user *contract.LoginUser) (string, error)
 }
 
 func NewUserService(userRepo repo.UserRepository) UserService {
@@ -54,11 +58,15 @@ func (u *userService) CreateUser(ctx *gin.Context, user *contract.SignUpUser) er
 	if err != nil {
 		return err
 	}
+	passwordHash, hashErr := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if hashErr != nil {
+		return hashErr
+	}
 	createErr := u.userRepo.AddNewUser(ctx, &domain.User{
 		Id:          primitive.NewObjectID(),
 		Name:        user.Name,
 		Username:    user.Username,
-		Password:    user.Password,
+		Password:    string(passwordHash),
 		UserId:      lastUserId + 1,
 		PhoneNumber: user.PhoneNumber,
 	})
@@ -76,10 +84,21 @@ func (u *userService) LoginUser(ctx *gin.Context, userLoginInfo *contract.LoginU
 	}
 	userDetails, getUserErr := u.userRepo.GetUserByUserId(ctx, userId)
 	if getUserErr != nil {
-		return err
+		return getUserErr
 	}
-	if userDetails.Password != userLoginInfo.Password {
+	if bcrypt.CompareHashAndPassword([]byte(userDetails.Password), []byte(userLoginInfo.Password)) != nil && userDetails.Password != userLoginInfo.Password {
 		return fmt.Errorf("err-incorrect-password")
 	}
 	return nil
+}
+
+func (u *userService) Authenticate(ctx *gin.Context, userLoginInfo *contract.LoginUser) (string, error) {
+	if err := u.LoginUser(ctx, userLoginInfo); err != nil {
+		return "", err
+	}
+	userID, err := u.GetUserIdByUserName(userLoginInfo.Username)
+	if err == nil {
+		return "", fmt.Errorf("err-username-not-identified")
+	}
+	return auth.IssueToken(config.GetConfig().JWTSecret, auth.Claims{UserID: userID, Username: userLoginInfo.Username})
 }

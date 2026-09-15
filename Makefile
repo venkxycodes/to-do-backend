@@ -45,10 +45,10 @@ build:
 	@$(GO_BUILD) -o $(APP_EXECUTABLE) main.go
 
 ## test: Run all tests
-test: .env test-run test-cov
+test: test-run
 
 test-run:
-	@go test ./... -covermode=count -coverprofile=test.cov
+	@go test ./...
 
 config.yaml:
 	@cp application.sample.yaml application.yaml
