@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"errors"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -23,7 +22,7 @@ func NewUserHandler(userService service.UserService) UserHandler {
 func (u UserHandler) SignUpUser(c *gin.Context) {
 	var createUserRequest contract.SignUpUser
 	if err := c.ShouldBindBodyWithJSON(&createUserRequest); err != nil {
-		httpStatus, errResponse := utils.RenderError(errors.ErrUnsupported, createUserRequest.Validate(), "Invalid request body")
+		httpStatus, errResponse := utils.RenderError(appErrors.ErrInvalidRequest, createUserRequest.Validate(), "Invalid request body")
 		c.JSON(httpStatus, errResponse)
 		return
 	}
@@ -46,7 +45,7 @@ func (u UserHandler) SignUpUser(c *gin.Context) {
 func (u UserHandler) LoginUser(c *gin.Context) {
 	var loginUserRequest contract.LoginUser
 	if err := c.ShouldBindBodyWithJSON(&loginUserRequest); err != nil {
-		httpStatus, errResponse := utils.RenderError(errors.ErrUnsupported, loginUserRequest.Validate(), "Invalid request body")
+		httpStatus, errResponse := utils.RenderError(appErrors.ErrInvalidRequest, loginUserRequest.Validate(), "Invalid request body")
 		c.JSON(httpStatus, errResponse)
 		return
 	}

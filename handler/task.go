@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"errors"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -24,7 +23,7 @@ func (t *ToDoHandler) CreateTask(c *gin.Context) {
 	var createTaskRequest contract.CreateTask
 	if err := c.ShouldBindBodyWithJSON(&createTaskRequest); err != nil {
 		log.Println(err.Error())
-		httpStatus, errResp := utils.RenderError(errors.ErrUnsupported, createTaskRequest.Validate(), "Invalid request body")
+		httpStatus, errResp := utils.RenderError(appErrors.ErrInvalidRequest, createTaskRequest.Validate(), "Invalid request body")
 		c.JSON(httpStatus, errResp)
 		return
 	}
@@ -55,7 +54,7 @@ func (t *ToDoHandler) UpdateTask(c *gin.Context) {
 	var updateTaskRequest contract.UpdateTask
 	if err := c.ShouldBindBodyWithJSON(&updateTaskRequest); err != nil {
 		log.Println(err.Error())
-		httpStatus, errResp := utils.RenderError(errors.ErrUnsupported, updateTaskRequest.Validate(), "Invalid request body")
+		httpStatus, errResp := utils.RenderError(appErrors.ErrInvalidRequest, updateTaskRequest.Validate(), "Invalid request body")
 		c.JSON(httpStatus, errResp)
 		return
 	}
@@ -109,7 +108,7 @@ func (t *ToDoHandler) UpdateTaskStatus(c *gin.Context) {
 	var updateTaskStatusRequest contract.UpdateTaskStatus
 	if err := c.ShouldBindBodyWithJSON(&updateTaskStatusRequest); err != nil {
 		log.Println(err.Error())
-		httpStatus, errResp := utils.RenderError(errors.ErrUnsupported, updateTaskStatusRequest.Validate(), "Invalid request body")
+		httpStatus, errResp := utils.RenderError(appErrors.ErrInvalidRequest, updateTaskStatusRequest.Validate(), "Invalid request body")
 		c.JSON(httpStatus, errResp)
 		return
 	}
