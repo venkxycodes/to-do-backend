@@ -102,13 +102,9 @@ func (u *userService) CreateUser(ctx *gin.Context, user *contract.SignUpUser) er
 }
 
 func (u *userService) LoginUser(ctx *gin.Context, userLoginInfo *contract.LoginUser) error {
-	userId, err := u.GetUserIdByUserName(userLoginInfo.Username)
-	if err == nil {
+	userDetails, err := u.userRepo.GetUserByUsername(ctx, userLoginInfo.Username)
+	if err != nil {
 		return fmt.Errorf("err-username-not-identified")
-	}
-	userDetails, getUserErr := u.userRepo.GetUserByUserId(ctx, userId)
-	if getUserErr != nil {
-		return getUserErr
 	}
 	if bcrypt.CompareHashAndPassword([]byte(userDetails.Password), []byte(userLoginInfo.Password)) != nil {
 		return fmt.Errorf("err-incorrect-password")
@@ -117,12 +113,12 @@ func (u *userService) LoginUser(ctx *gin.Context, userLoginInfo *contract.LoginU
 }
 
 func (u *userService) Authenticate(ctx *gin.Context, userLoginInfo *contract.LoginUser) (string, error) {
-	if err := u.LoginUser(ctx, userLoginInfo); err != nil {
-		return "", err
-	}
-	userID, err := u.GetUserIdByUserName(userLoginInfo.Username)
-	if err == nil {
+	userDetails, err := u.userRepo.GetUserByUsername(ctx, userLoginInfo.Username)
+	if err != nil {
 		return "", fmt.Errorf("err-username-not-identified")
 	}
-	return auth.IssueToken(config.GetConfig().JWTSecret, auth.Claims{UserID: userID, Username: userLoginInfo.Username})
+	if bcrypt.CompareHashAndPassword([]byte(userDetails.Password), []byte(userLoginInfo.Password)) != nil {
+		return "", fmt.Errorf("err-incorrect-password")
+	}
+	return auth.IssueToken(config.GetConfig().JWTSecret, auth.Claims{UserID: userDetails.UserId, Username: userLoginInfo.Username})
 }
