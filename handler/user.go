@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"to-do/contract"
+	appErrors "to-do/error"
 	"to-do/service"
 	"to-do/utils"
 )
@@ -25,6 +26,11 @@ func (u UserHandler) SignUpUser(c *gin.Context) {
 		c.JSON(httpStatus, errResponse)
 		return
 	}
+	if validationErrors := createUserRequest.Validate(); len(validationErrors) > 0 {
+		httpStatus, errResponse := utils.RenderError(appErrors.ErrInvalidRequest, validationErrors, "Invalid request body")
+		c.JSON(httpStatus, errResponse)
+		return
+	}
 	err := u.userService.CreateUser(c, &createUserRequest)
 	if err != nil {
 		log.Print(err)
@@ -40,6 +46,11 @@ func (u UserHandler) LoginUser(c *gin.Context) {
 	var loginUserRequest contract.LoginUser
 	if err := c.ShouldBindBodyWithJSON(&loginUserRequest); err != nil {
 		httpStatus, errResponse := utils.RenderError(errors.ErrUnsupported, loginUserRequest.Validate(), "Invalid request body")
+		c.JSON(httpStatus, errResponse)
+		return
+	}
+	if loginUserRequest.Username == "" || loginUserRequest.Password == "" {
+		httpStatus, errResponse := utils.RenderError(appErrors.ErrInvalidRequest, "username and password are required", "Invalid request body")
 		c.JSON(httpStatus, errResponse)
 		return
 	}

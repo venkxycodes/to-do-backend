@@ -19,7 +19,7 @@ type Options struct {
 
 func InitRouter(opts Options) *gin.Engine {
 	router := gin.Default()
-	router.Use(gin.Logger())
+	router.Use(corsMiddleware(opts.Conf.CORSOrigins))
 	router.Use(gin.Recovery())
 	contract.RegisterValidators()
 

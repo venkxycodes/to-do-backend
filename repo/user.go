@@ -11,18 +11,32 @@ import (
 
 type userRepository struct {
 	collection *mongo.Collection
+	counters   *mongo.Collection
 }
 
 type UserRepository interface {
 	AddNewUser(ctx *gin.Context, user *domain.User) error
 	GetUserByUserId(ctx *gin.Context, userId int64) (*domain.User, error)
+	GetUserByUsername(ctx *gin.Context, username string) (*domain.User, error)
 	GetAllUsers(ctx *gin.Context) ([]domain.User, error)
 }
 
 func NewUserRepository(db *mongo.Client) UserRepository {
 	return &userRepository{
 		collection: db.Database(config.GetConfig().DbConfig.DBName).Collection("users"),
+		counters:   db.Database(config.GetConfig().DbConfig.DBName).Collection("counters"),
 	}
+}
+
+func (r *userRepository) NextUserID(ctx *gin.Context) (int64, error) {
+	var counter struct {
+		Value int64 `bson:"value"`
+	}
+	result := r.counters.FindOneAndUpdate(ctx, bson.M{"_id": "users"}, bson.M{"$inc": bson.M{"value": int64(1)}}, options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After))
+	if err := result.Decode(&counter); err != nil {
+		return 0, err
+	}
+	return counter.Value, nil
 }
 
 func (r *userRepository) AddNewUser(ctx *gin.Context, user *domain.User) error {
@@ -32,6 +46,13 @@ func (r *userRepository) AddNewUser(ctx *gin.Context, user *domain.User) error {
 
 func (r *userRepository) GetUserByUserId(ctx *gin.Context, userId int64) (*domain.User, error) {
 	filter := bson.M{"user_id": userId}
+	var result domain.User
+	err := r.collection.FindOne(ctx, filter).Decode(&result)
+	return &result, err
+}
+
+func (r *userRepository) GetUserByUsername(ctx *gin.Context, username string) (*domain.User, error) {
+	filter := bson.M{"username": username}
 	var result domain.User
 	err := r.collection.FindOne(ctx, filter).Decode(&result)
 	return &result, err

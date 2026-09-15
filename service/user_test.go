@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"golang.org/x/crypto/bcrypt"
 	"net/http/httptest"
 	"testing"
 	"to-do/contract"
@@ -181,6 +182,7 @@ func Test_userService_LoginUser(t *testing.T) {
 		userLoginInfo *contract.LoginUser
 	}
 	ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
+	passwordHash, _ := bcrypt.GenerateFromPassword([]byte("Venkxycodes@123"), bcrypt.MinCost)
 	tests := []struct {
 		name    string
 		fields  fields
@@ -277,7 +279,7 @@ func Test_userService_LoginUser(t *testing.T) {
 				tt.fields.userRepo.On("GetUserByUserId", tt.args.ctx, int64(4)).Return(&domain.User{
 					Username: "venkxy7codes1",
 					UserId:   int64(4),
-					Password: "Venkxycodes@123",
+					Password: string(passwordHash),
 				}, nil).Once()
 			}
 			err := u.LoginUser(tt.args.ctx, tt.args.userLoginInfo)

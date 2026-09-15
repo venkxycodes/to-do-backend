@@ -18,7 +18,9 @@ func apiServerCommand() *cobra.Command {
 			logger.Logger.Info("initialising server command")
 			globalConfig := config.GetConfig()
 
-			appcontext.Init()
+			if err := appcontext.Init(); err != nil {
+				return fmt.Errorf("initialize application context: %w", err)
+			}
 			db := appcontext.GetDBClient()
 			fmt.Println(db)
 

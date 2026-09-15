@@ -9,29 +9,29 @@ import (
 )
 
 type CreateTask struct {
-	UserName  string          `json:"user_name" bson:"user_name" binding:"required"`
+	UserName  string          `json:"user_name" bson:"user_name"`
 	Name      string          `json:"name" binding:"required" bson:"name"`
 	Deadline  int64           `json:"deadline" binding:"required,CheckValidDeadline" bson:"deadline"`
 	Priority  domain.Priority `json:"priority" binding:"required" bson:"priority"`
 	Notes     string          `json:"notes" bson:"notes"`
-	CreatedBy string          `json:"created_by" bson:"created_by" binding:"required"`
+	CreatedBy string          `json:"created_by" bson:"created_by"`
 }
 
 type UpdateTask struct {
 	Id        primitive.ObjectID `json:"id" bson:"_id" binding:"required"`
-	UserName  string             `json:"user_name" bson:"user_name" binding:"required"`
+	UserName  string             `json:"user_name" bson:"user_name"`
 	Name      string             `json:"name" binding:"required" bson:"name"`
 	Notes     string             `json:"notes" binding:"required" bson:"notes"`
 	Deadline  int64              `json:"deadline" binding:"required,CheckValidDeadline" bson:"deadline"`
 	Priority  domain.Priority    `json:"priority" binding:"required" bson:"priority"`
-	UpdatedBy string             `json:"updated_by" bson:"updated_by" binding:"required"`
+	UpdatedBy string             `json:"updated_by" bson:"updated_by"`
 }
 
 type UpdateTaskStatus struct {
 	TaskId    primitive.ObjectID `json:"task_id" bson:"task_id" binding:"required"`
-	UserName  string             `json:"user_name" bson:"user_name" binding:"required"`
+	UserName  string             `json:"user_name" bson:"user_name"`
 	State     domain.State       `json:"state" bson:"state" binding:"required"`
-	UpdatedBy string             `json:"updated_by" bson:"updated_by" binding:"required"`
+	UpdatedBy string             `json:"updated_by" bson:"updated_by"`
 }
 
 var CheckValidDeadline validator.Func = func(fl validator.FieldLevel) bool {

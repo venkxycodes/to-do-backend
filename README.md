@@ -11,8 +11,9 @@ A Go/Gin REST API for user accounts and task management, backed by MongoDB.
 
 1. Copy `.env.example` to `.env`.
 2. Set `JWT_SECRET` to a long random value.
-3. Start MongoDB.
-4. Run the API:
+3. Set `CORS_ORIGINS` to a comma-separated list of trusted frontend origins.
+4. Start MongoDB.
+5. Run the API:
 
 ```sh
 go run . start_http
@@ -56,3 +57,5 @@ Run the test suite with:
 ```sh
 make test
 ```
+
+The application creates the required MongoDB indexes during startup. Existing duplicate usernames or user IDs must be cleaned up before deployment. Passwords must be stored as bcrypt hashes; legacy plaintext passwords require a reset.

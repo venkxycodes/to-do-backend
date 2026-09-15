@@ -5,11 +5,12 @@ import (
 )
 
 type Config struct {
-	AppName   string   `yaml:"APP_NAME" env:"APP_NAME"`
-	AppPort   string   `yaml:"APP_PORT" env:"APP_PORT"`
-	ENV       string   `yaml:"ENV" env:"ENVIRONMENT"`
-	JWTSecret string   `yaml:"JWT_SECRET" env:"JWT_SECRET"`
-	DbConfig  DbConfig `yaml:"DB_CONFIG" env:"DB_CONFIG"`
+	AppName     string   `yaml:"APP_NAME" env:"APP_NAME"`
+	AppPort     string   `yaml:"APP_PORT" env:"APP_PORT"`
+	ENV         string   `yaml:"ENV" env:"ENVIRONMENT"`
+	JWTSecret   string   `yaml:"JWT_SECRET" env:"JWT_SECRET"`
+	CORSOrigins string   `yaml:"CORS_ORIGINS" env:"CORS_ORIGINS"`
+	DbConfig    DbConfig `yaml:"DB_CONFIG" env:"DB_CONFIG"`
 }
 
 func (c *Config) SetDefault() {
@@ -17,6 +18,7 @@ func (c *Config) SetDefault() {
 	c.AppPort = "9090"
 	c.ENV = "dev"
 	c.JWTSecret = ""
+	c.CORSOrigins = ""
 	c.DbConfig = DbConfig{
 		Host:     "localhost",
 		Username: "",
@@ -40,6 +42,9 @@ func GetConfig() *Config {
 	}
 	if value := os.Getenv("JWT_SECRET"); value != "" {
 		config.JWTSecret = value
+	}
+	if value := os.Getenv("CORS_ORIGINS"); value != "" {
+		config.CORSOrigins = value
 	}
 	config.DbConfig = GetDbConfig()
 	return config

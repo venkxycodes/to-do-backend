@@ -20,6 +20,14 @@ func (u *UserRepoMock) GetUserByUserId(ctx *gin.Context, userId int64) (*domain.
 	return args.Get(0).(*domain.User), args.Error(1)
 }
 
+func (u *UserRepoMock) GetUserByUsername(ctx *gin.Context, username string) (*domain.User, error) {
+	args := u.Called(ctx, username)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*domain.User), args.Error(1)
+}
+
 func (u *UserRepoMock) GetAllUsers(ctx *gin.Context) ([]domain.User, error) {
 	args := u.Called(ctx)
 	return args.Get(0).([]domain.User), args.Error(1)
