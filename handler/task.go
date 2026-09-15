@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"to-do/contract"
+	appErrors "to-do/error"
 	"to-do/service"
 	"to-do/utils"
 )
@@ -62,7 +63,7 @@ func (t *ToDoHandler) GetTasks(c *gin.Context) {
 	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 	username := c.Query("user_name")
 	if username == "" {
-		httpStatus, errorMessage := utils.RenderError(nil, "Username query parameter is missing")
+		httpStatus, errorMessage := utils.RenderError(appErrors.ErrInvalidRequest, "Username query parameter is missing")
 		c.JSON(httpStatus, errorMessage)
 		return
 	}
