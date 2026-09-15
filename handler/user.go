@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"strings"
 	"to-do/contract"
 	appErrors "to-do/error"
 	"to-do/service"
@@ -57,6 +58,10 @@ func (u UserHandler) LoginUser(c *gin.Context) {
 	token, err := u.userService.Authenticate(c, &loginUserRequest)
 	if err != nil {
 		log.Print(err)
+		if strings.HasPrefix(err.Error(), "err-invalid-credentials") {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid username or password"})
+			return
+		}
 		httpStatus, errorMessage := utils.RenderError(err, "Failed to login user")
 		c.JSON(httpStatus, errorMessage)
 		return

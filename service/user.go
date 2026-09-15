@@ -104,10 +104,10 @@ func (u *userService) CreateUser(ctx *gin.Context, user *contract.SignUpUser) er
 func (u *userService) LoginUser(ctx *gin.Context, userLoginInfo *contract.LoginUser) error {
 	userDetails, err := u.userRepo.GetUserByUsername(ctx, userLoginInfo.Username)
 	if err != nil {
-		return fmt.Errorf("err-username-not-identified")
+		return fmt.Errorf("err-invalid-credentials")
 	}
 	if bcrypt.CompareHashAndPassword([]byte(userDetails.Password), []byte(userLoginInfo.Password)) != nil {
-		return fmt.Errorf("err-incorrect-password")
+		return fmt.Errorf("err-invalid-credentials")
 	}
 	return nil
 }
@@ -115,10 +115,10 @@ func (u *userService) LoginUser(ctx *gin.Context, userLoginInfo *contract.LoginU
 func (u *userService) Authenticate(ctx *gin.Context, userLoginInfo *contract.LoginUser) (string, error) {
 	userDetails, err := u.userRepo.GetUserByUsername(ctx, userLoginInfo.Username)
 	if err != nil {
-		return "", fmt.Errorf("err-username-not-identified")
+		return "", fmt.Errorf("err-invalid-credentials")
 	}
 	if bcrypt.CompareHashAndPassword([]byte(userDetails.Password), []byte(userLoginInfo.Password)) != nil {
-		return "", fmt.Errorf("err-incorrect-password")
+		return "", fmt.Errorf("err-invalid-credentials")
 	}
 	return auth.IssueToken(config.GetConfig().JWTSecret, auth.Claims{UserID: userDetails.UserId, Username: userLoginInfo.Username})
 }

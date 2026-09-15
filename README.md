@@ -44,6 +44,7 @@ curl -X POST http://localhost:9090/to-do/v1/user/login \
 ```
 
 All task endpoints require `Authorization: Bearer <token>`. The authenticated account is used for task ownership; request-body usernames are ignored for authorization.
+The server also sets audit fields from the token, so clients should not rely on sending `user_name`, `created_by`, or `updated_by`.
 
 ## Task endpoints
 
@@ -57,5 +58,7 @@ Run the test suite with:
 ```sh
 make test
 ```
+
+Pull requests are checked with the race detector and `go vet` in GitHub Actions.
 
 The application creates the required MongoDB indexes during startup. Existing duplicate usernames or user IDs must be cleaned up before deployment. Passwords must be stored as bcrypt hashes; legacy plaintext passwords require a reset.
