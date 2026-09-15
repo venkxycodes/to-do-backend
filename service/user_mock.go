@@ -25,6 +25,10 @@ func (u *UserServiceMock) GetUserIdByUserName(username string) (int64, error) {
 	return int64(args.Int(0)), args.Error(1)
 }
 
+func (u *UserServiceMock) GetUserIdByUserNameWithContext(ctx *gin.Context, username string) (int64, error) {
+	return u.GetUserIdByUserName(username)
+}
+
 func (u *UserServiceMock) CreateUser(ctx *gin.Context, userSignUpRequest *contract.SignUpUser) error {
 	args := u.Called(ctx, userSignUpRequest)
 	return args.Error(0)

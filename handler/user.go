@@ -1,11 +1,12 @@
 package handler
 
 import (
-	"errors"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"strings"
 	"to-do/contract"
+	appErrors "to-do/error"
 	"to-do/service"
 	"to-do/utils"
 )
@@ -21,7 +22,12 @@ func NewUserHandler(userService service.UserService) UserHandler {
 func (u UserHandler) SignUpUser(c *gin.Context) {
 	var createUserRequest contract.SignUpUser
 	if err := c.ShouldBindBodyWithJSON(&createUserRequest); err != nil {
-		httpStatus, errResponse := utils.RenderError(errors.ErrUnsupported, createUserRequest.Validate(), "Invalid request body")
+		httpStatus, errResponse := utils.RenderError(appErrors.ErrInvalidRequest, createUserRequest.Validate(), "Invalid request body")
+		c.JSON(httpStatus, errResponse)
+		return
+	}
+	if validationErrors := createUserRequest.Validate(); len(validationErrors) > 0 {
+		httpStatus, errResponse := utils.RenderError(appErrors.ErrInvalidRequest, validationErrors, "Invalid request body")
 		c.JSON(httpStatus, errResponse)
 		return
 	}
@@ -39,13 +45,22 @@ func (u UserHandler) SignUpUser(c *gin.Context) {
 func (u UserHandler) LoginUser(c *gin.Context) {
 	var loginUserRequest contract.LoginUser
 	if err := c.ShouldBindBodyWithJSON(&loginUserRequest); err != nil {
-		httpStatus, errResponse := utils.RenderError(errors.ErrUnsupported, loginUserRequest.Validate(), "Invalid request body")
+		httpStatus, errResponse := utils.RenderError(appErrors.ErrInvalidRequest, loginUserRequest.Validate(), "Invalid request body")
+		c.JSON(httpStatus, errResponse)
+		return
+	}
+	if loginUserRequest.Username == "" || loginUserRequest.Password == "" {
+		httpStatus, errResponse := utils.RenderError(appErrors.ErrInvalidRequest, "username and password are required", "Invalid request body")
 		c.JSON(httpStatus, errResponse)
 		return
 	}
 	token, err := u.userService.Authenticate(c, &loginUserRequest)
 	if err != nil {
 		log.Print(err)
+		if strings.HasPrefix(err.Error(), "err-invalid-credentials") {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid username or password"})
+			return
+		}
 		httpStatus, errorMessage := utils.RenderError(err, "Failed to login user")
 		c.JSON(httpStatus, errorMessage)
 		return

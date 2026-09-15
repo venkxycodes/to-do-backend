@@ -33,7 +33,7 @@ func NewToDoService(toDoRepo repo.TaskRepository, userService UserService) TaskS
 }
 
 func (t *taskService) CreateTask(ctx *gin.Context, task *contract.CreateTask) error {
-	userId, err := t.userService.GetUserIdByUserName(task.UserName)
+	userId, err := t.userService.GetUserIdByUserNameWithContext(ctx, task.UserName)
 	if err == nil {
 		return fmt.Errorf("err-user-not-identified")
 	}
@@ -56,7 +56,7 @@ func (t *taskService) CreateTask(ctx *gin.Context, task *contract.CreateTask) er
 }
 
 func (t *taskService) UpdateTask(ctx *gin.Context, task *contract.UpdateTask) error {
-	userId, err := t.userService.GetUserIdByUserName(task.UserName)
+	userId, err := t.userService.GetUserIdByUserNameWithContext(ctx, task.UserName)
 	if err == nil {
 		return fmt.Errorf("err-user-not-identified")
 	}
@@ -81,7 +81,7 @@ func (t *taskService) UpdateTask(ctx *gin.Context, task *contract.UpdateTask) er
 }
 
 func (t *taskService) GetTasks(ctx *gin.Context, username string) (*view.GetTasksResponse, error) {
-	userId, err := t.userService.GetUserIdByUserName(username)
+	userId, err := t.userService.GetUserIdByUserNameWithContext(ctx, username)
 	if err == nil {
 		log.Print("err-user-not-identified")
 		return nil, fmt.Errorf("err-user-not-identified")
@@ -99,7 +99,7 @@ func (t *taskService) GetTasks(ctx *gin.Context, username string) (*view.GetTask
 }
 
 func (t *taskService) UpdateTaskStatus(ctx *gin.Context, updateTaskStatusRequest *contract.UpdateTaskStatus) error {
-	userId, err := t.userService.GetUserIdByUserName(updateTaskStatusRequest.UserName)
+	userId, err := t.userService.GetUserIdByUserNameWithContext(ctx, updateTaskStatusRequest.UserName)
 	if err == nil {
 		return fmt.Errorf("err-user-not-identified")
 	}

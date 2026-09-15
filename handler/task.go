@@ -1,12 +1,12 @@
 package handler
 
 import (
-	"errors"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"to-do/auth"
 	"to-do/contract"
+	appErrors "to-do/error"
 	"to-do/service"
 	"to-do/utils"
 )
@@ -20,11 +20,10 @@ func NewToDoHandler(toDoService service.TaskService) ToDoHandler {
 }
 
 func (t *ToDoHandler) CreateTask(c *gin.Context) {
-	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 	var createTaskRequest contract.CreateTask
 	if err := c.ShouldBindBodyWithJSON(&createTaskRequest); err != nil {
 		log.Println(err.Error())
-		httpStatus, errResp := utils.RenderError(errors.ErrUnsupported, createTaskRequest.Validate(), "Invalid request body")
+		httpStatus, errResp := utils.RenderError(appErrors.ErrInvalidRequest, createTaskRequest.Validate(), "Invalid request body")
 		c.JSON(httpStatus, errResp)
 		return
 	}
@@ -35,6 +34,11 @@ func (t *ToDoHandler) CreateTask(c *gin.Context) {
 	}
 	createTaskRequest.UserName = claims.Username
 	createTaskRequest.CreatedBy = claims.Username
+	if validationErrors := createTaskRequest.Validate(); len(validationErrors) > 0 {
+		httpStatus, errResponse := utils.RenderError(appErrors.ErrInvalidRequest, validationErrors, "Invalid request body")
+		c.JSON(httpStatus, errResponse)
+		return
+	}
 	err := t.taskService.CreateTask(c, &createTaskRequest)
 	if err != nil {
 		log.Print(err)
@@ -47,11 +51,10 @@ func (t *ToDoHandler) CreateTask(c *gin.Context) {
 }
 
 func (t *ToDoHandler) UpdateTask(c *gin.Context) {
-	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 	var updateTaskRequest contract.UpdateTask
 	if err := c.ShouldBindBodyWithJSON(&updateTaskRequest); err != nil {
 		log.Println(err.Error())
-		httpStatus, errResp := utils.RenderError(errors.ErrUnsupported, updateTaskRequest.Validate(), "Invalid request body")
+		httpStatus, errResp := utils.RenderError(appErrors.ErrInvalidRequest, updateTaskRequest.Validate(), "Invalid request body")
 		c.JSON(httpStatus, errResp)
 		return
 	}
@@ -62,6 +65,11 @@ func (t *ToDoHandler) UpdateTask(c *gin.Context) {
 	}
 	updateTaskRequest.UserName = claims.Username
 	updateTaskRequest.UpdatedBy = claims.Username
+	if validationErrors := updateTaskRequest.Validate(); len(validationErrors) > 0 {
+		httpStatus, errResponse := utils.RenderError(appErrors.ErrInvalidRequest, validationErrors, "Invalid request body")
+		c.JSON(httpStatus, errResponse)
+		return
+	}
 	err := t.taskService.UpdateTask(c, &updateTaskRequest)
 	if err != nil {
 		log.Print(err.Error())
@@ -74,7 +82,6 @@ func (t *ToDoHandler) UpdateTask(c *gin.Context) {
 }
 
 func (t *ToDoHandler) GetTasks(c *gin.Context) {
-	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 	username := c.Query("user_name")
 	claims, ok := auth.ClaimsFromContext(c)
 	if !ok {
@@ -98,11 +105,10 @@ func (t *ToDoHandler) GetTasks(c *gin.Context) {
 }
 
 func (t *ToDoHandler) UpdateTaskStatus(c *gin.Context) {
-	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 	var updateTaskStatusRequest contract.UpdateTaskStatus
 	if err := c.ShouldBindBodyWithJSON(&updateTaskStatusRequest); err != nil {
 		log.Println(err.Error())
-		httpStatus, errResp := utils.RenderError(errors.ErrUnsupported, updateTaskStatusRequest.Validate(), "Invalid request body")
+		httpStatus, errResp := utils.RenderError(appErrors.ErrInvalidRequest, updateTaskStatusRequest.Validate(), "Invalid request body")
 		c.JSON(httpStatus, errResp)
 		return
 	}
@@ -113,6 +119,11 @@ func (t *ToDoHandler) UpdateTaskStatus(c *gin.Context) {
 	}
 	updateTaskStatusRequest.UserName = claims.Username
 	updateTaskStatusRequest.UpdatedBy = claims.Username
+	if validationErrors := updateTaskStatusRequest.Validate(); len(validationErrors) > 0 {
+		httpStatus, errResponse := utils.RenderError(appErrors.ErrInvalidRequest, validationErrors, "Invalid request body")
+		c.JSON(httpStatus, errResponse)
+		return
+	}
 	err := t.taskService.UpdateTaskStatus(c, &updateTaskStatusRequest)
 	if err != nil {
 		log.Print(err.Error())

@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"golang.org/x/crypto/bcrypt"
 	"net/http/httptest"
 	"testing"
 	"to-do/contract"
@@ -181,6 +182,7 @@ func Test_userService_LoginUser(t *testing.T) {
 		userLoginInfo *contract.LoginUser
 	}
 	ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
+	passwordHash, _ := bcrypt.GenerateFromPassword([]byte("Venkxycodes@123"), bcrypt.MinCost)
 	tests := []struct {
 		name    string
 		fields  fields
@@ -190,6 +192,7 @@ func Test_userService_LoginUser(t *testing.T) {
 		{
 			name: "test user not identified",
 			fields: fields{
+				userRepo: repo.UserRepoMock{},
 				usernameToUserIdMap: &domain.UsernameToUserIdMap{
 					M: map[string]int64{"user": 4},
 				},
@@ -262,22 +265,26 @@ func Test_userService_LoginUser(t *testing.T) {
 				userRepo:            &tt.fields.userRepo,
 				usernameToUserIdMap: tt.fields.usernameToUserIdMap,
 			}
+			if tt.name == "test user not identified" {
+				var user *domain.User
+				tt.fields.userRepo.On("GetUserByUsername", tt.args.ctx, tt.args.userLoginInfo.Username).Return(user, fmt.Errorf("err")).Once()
+			}
 			if tt.name == "test user identified, get user details error" {
 				var user *domain.User
-				tt.fields.userRepo.On("GetUserByUserId", tt.args.ctx, int64(4)).Return(user, fmt.Errorf("err")).Once()
+				tt.fields.userRepo.On("GetUserByUsername", tt.args.ctx, tt.args.userLoginInfo.Username).Return(user, fmt.Errorf("err")).Once()
 			}
 			if tt.name == "test user identified, password mismatch" {
-				tt.fields.userRepo.On("GetUserByUserId", tt.args.ctx, int64(4)).Return(&domain.User{
+				tt.fields.userRepo.On("GetUserByUsername", tt.args.ctx, tt.args.userLoginInfo.Username).Return(&domain.User{
 					Username: "venkxy7codes1",
 					UserId:   int64(4),
 					Password: "venkxycodes@123",
 				}, nil).Once()
 			}
 			if tt.name == "test successful login" {
-				tt.fields.userRepo.On("GetUserByUserId", tt.args.ctx, int64(4)).Return(&domain.User{
+				tt.fields.userRepo.On("GetUserByUsername", tt.args.ctx, tt.args.userLoginInfo.Username).Return(&domain.User{
 					Username: "venkxy7codes1",
 					UserId:   int64(4),
-					Password: "Venkxycodes@123",
+					Password: string(passwordHash),
 				}, nil).Once()
 			}
 			err := u.LoginUser(tt.args.ctx, tt.args.userLoginInfo)
