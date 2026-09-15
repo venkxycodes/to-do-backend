@@ -16,7 +16,7 @@ func (c *Config) SetDefault() {
 	c.AppName = "to-do"
 	c.AppPort = "9090"
 	c.ENV = "dev"
-	c.JWTSecret = "change-me-in-development"
+	c.JWTSecret = ""
 	c.DbConfig = DbConfig{
 		Host:     "localhost",
 		Username: "",
