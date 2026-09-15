@@ -35,6 +35,8 @@ func (u *UsernameToUserIdMap) Set(username string, userId int64) {
 	defer u.Unlock()
 	if username != "" {
 		u.M[username] = userId
-		u.LastUserId += 1
+		if userId > u.LastUserId {
+			u.LastUserId = userId
+		}
 	}
 }

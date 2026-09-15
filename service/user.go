@@ -84,7 +84,7 @@ func (u *userService) LoginUser(ctx *gin.Context, userLoginInfo *contract.LoginU
 	}
 	userDetails, getUserErr := u.userRepo.GetUserByUserId(ctx, userId)
 	if getUserErr != nil {
-		return err
+		return getUserErr
 	}
 	if bcrypt.CompareHashAndPassword([]byte(userDetails.Password), []byte(userLoginInfo.Password)) != nil && userDetails.Password != userLoginInfo.Password {
 		return fmt.Errorf("err-incorrect-password")
