@@ -43,13 +43,13 @@ func (u UserHandler) LoginUser(c *gin.Context) {
 		c.JSON(httpStatus, errResponse)
 		return
 	}
-	err := u.userService.LoginUser(c, &loginUserRequest)
+	token, err := u.userService.Authenticate(c, &loginUserRequest)
 	if err != nil {
 		log.Print(err)
 		httpStatus, errorMessage := utils.RenderError(err, "Failed to login user")
 		c.JSON(httpStatus, errorMessage)
 		return
 	}
-	c.JSON(http.StatusOK, utils.RenderSuccess("User logged in successfully"))
+	c.JSON(http.StatusOK, utils.RenderSuccess(map[string]string{"token": token}))
 	return
 }

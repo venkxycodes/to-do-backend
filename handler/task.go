@@ -5,8 +5,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"to-do/auth"
 	"to-do/contract"
-	appErrors "to-do/error"
 	"to-do/service"
 	"to-do/utils"
 )
@@ -28,6 +28,13 @@ func (t *ToDoHandler) CreateTask(c *gin.Context) {
 		c.JSON(httpStatus, errResp)
 		return
 	}
+	claims, ok := auth.ClaimsFromContext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication required"})
+		return
+	}
+	createTaskRequest.UserName = claims.Username
+	createTaskRequest.CreatedBy = claims.Username
 	err := t.taskService.CreateTask(c, &createTaskRequest)
 	if err != nil {
 		log.Print(err)
@@ -48,6 +55,13 @@ func (t *ToDoHandler) UpdateTask(c *gin.Context) {
 		c.JSON(httpStatus, errResp)
 		return
 	}
+	claims, ok := auth.ClaimsFromContext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication required"})
+		return
+	}
+	updateTaskRequest.UserName = claims.Username
+	updateTaskRequest.UpdatedBy = claims.Username
 	err := t.taskService.UpdateTask(c, &updateTaskRequest)
 	if err != nil {
 		log.Print(err.Error())
@@ -62,11 +76,16 @@ func (t *ToDoHandler) UpdateTask(c *gin.Context) {
 func (t *ToDoHandler) GetTasks(c *gin.Context) {
 	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 	username := c.Query("user_name")
-	if username == "" {
-		httpStatus, errorMessage := utils.RenderError(appErrors.ErrInvalidRequest, "Username query parameter is missing")
-		c.JSON(httpStatus, errorMessage)
+	claims, ok := auth.ClaimsFromContext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication required"})
 		return
 	}
+	if username != "" && username != claims.Username {
+		c.JSON(http.StatusForbidden, gin.H{"error": "cannot access another user's tasks"})
+		return
+	}
+	username = claims.Username
 	tasks, err := t.taskService.GetTasks(c, username)
 	if err != nil {
 		log.Print(err.Error())
@@ -87,6 +106,13 @@ func (t *ToDoHandler) UpdateTaskStatus(c *gin.Context) {
 		c.JSON(httpStatus, errResp)
 		return
 	}
+	claims, ok := auth.ClaimsFromContext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication required"})
+		return
+	}
+	updateTaskStatusRequest.UserName = claims.Username
+	updateTaskStatusRequest.UpdatedBy = claims.Username
 	err := t.taskService.UpdateTaskStatus(c, &updateTaskStatusRequest)
 	if err != nil {
 		log.Print(err.Error())
